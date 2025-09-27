@@ -66,9 +66,13 @@ export function Dashboard({ user, profile, businessType }: DashboardProps) {
                 Hello, {userName}
               </p>
             </div>
-            <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+            <Button 
+              variant="outline" 
+              className="border-blue-200 text-blue-600 hover:bg-blue-50"
+              onClick={() => window.location.href = '/protected/settings'}
+            >
               <Zap className="w-4 h-4 mr-2" />
-              View API Key
+              Manage API Keys
             </Button>
           </div>
         </div>

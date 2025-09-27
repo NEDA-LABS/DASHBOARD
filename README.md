@@ -36,9 +36,9 @@ A comprehensive cross-border payment infrastructure dashboard for onramp and off
 
 ## Prerequisites
 
-- Node.js 18+ 
-- npm or yarn
-- Supabase account
+- **Node.js 22.x or later** - [Download Node.js](https://nodejs.org/)
+- **npm 10.x or later** (comes with Node.js 22)
+- **Supabase account** - [Create account](https://supabase.com/)
 
 ## Quick Start
 
@@ -49,7 +49,14 @@ git clone <repository-url>
 cd intergration-dashboard
 ```
 
-### 2. Install dependencies
+### 2. Verify Node.js version
+
+```bash
+node --version  # Should be 22.x or later
+npm --version   # Should be 10.x or later
+```
+
+### 3. Install dependencies
 
 ```bash
 npm install

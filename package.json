@@ -1,10 +1,13 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check-node": "node --version && npm --version",
+    "upgrade-node": "./scripts/upgrade-node.sh",
+    "clean-install": "rm -rf node_modules package-lock.json && npm install"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.2",
@@ -27,9 +30,13 @@
     "sonner": "^1.7.0",
     "tailwind-merge": "^3.3.0"
   },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
+    "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.20",

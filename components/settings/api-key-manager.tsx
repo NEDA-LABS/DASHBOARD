@@ -82,6 +82,18 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
       return;
     }
 
+    // Check if user has reached the limit
+    if (apiKeys.length >= 10) {
+      toast.error("You have reached the maximum limit of 10 API keys");
+      return;
+    }
+
+    // Check for duplicate names
+    if (apiKeys.some(key => key.key_name.toLowerCase() === newKeyName.trim().toLowerCase())) {
+      toast.error("An API key with this name already exists");
+      return;
+    }
+
     setIsCreating(true);
     try {
       const apiKey = generateApiKey();
@@ -167,21 +179,26 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
                 API Keys
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Manage your API keys for accessing the NEDA platform programmatically.
+                Manage your API keys for accessing the NedaPay platform programmatically. You can create multiple API keys for different environments or applications.
               </p>
             </div>
             <Dialog>
               <DialogTrigger asChild>
-                <Button>
+                <Button disabled={apiKeys.length >= 10}>
                   <Plus className="mr-2 h-4 w-4" />
                   Create API Key
+                  {apiKeys.length >= 8 && (
+                    <span className="ml-2 text-xs">
+                      ({apiKeys.length}/10)
+                    </span>
+                  )}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Create New API Key</DialogTitle>
                   <DialogDescription>
-                    Create a new API key to access the NEDA platform programmatically.
+                    Create a new API key to access the NedaPay platform programmatically. You can create multiple keys for different environments (development, staging, production) or applications.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -213,8 +230,17 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
               <Key className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium">No API keys yet</p>
               <p className="text-sm">
-                Create your first API key to start integrating with the NEDA platform.
+                Create your first API key to start integrating with the NedaPay platform.
               </p>
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-900 mb-2">Getting Started</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Create separate API keys for different environments</li>
+                  <li>• Use descriptive names like "Production", "Development", "Mobile App"</li>
+                  <li>• Store your API secret securely - it won't be shown again</li>
+                  <li>• You can create multiple API keys as needed</li>
+                </ul>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -348,6 +374,49 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
           </DialogContent>
         </Dialog>
       )}
+
+      {/* API Usage Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            API Usage & Limits
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-medium mb-3">Current Plan Limits</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">API Keys</span>
+                  <span className="font-medium">{apiKeys.length}/10</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Requests per month</span>
+                  <span className="font-medium">Coming Soon</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Rate limit</span>
+                  <span className="font-medium">Coming Soon</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium mb-3">Quick Start</h4>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>1. Create an API key with a descriptive name</p>
+                <p>2. Copy both the API key and secret</p>
+                <p>3. Store them securely in your application</p>
+                <p>4. Use them to authenticate API requests</p>
+              </div>
+              <Button variant="outline" size="sm" className="mt-3" onClick={() => window.location.href = '/protected/docs'}>
+                View API Documentation
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

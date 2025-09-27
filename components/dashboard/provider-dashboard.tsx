@@ -1,7 +1,3 @@
-"use client";
-
-import { User } from "@supabase/supabase-js";
-import { UserProfile } from "@/lib/types/database";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -15,12 +11,8 @@ import {
   BarChart3
 } from "lucide-react";
 
-interface ProviderDashboardProps {
-  user: User;
-  profile: UserProfile | null;
-}
 
-export function ProviderDashboard({ user, profile }: ProviderDashboardProps) {
+export function ProviderDashboard() {
   const stats = [
     {
       title: "Total Liquidity",
@@ -197,7 +189,7 @@ export function ProviderDashboard({ user, profile }: ProviderDashboardProps) {
           <div className="space-y-4">
             <p className="text-muted-foreground">
               As a Provider, you earn fees by providing liquidity for cross-border transactions. 
-              Here's how to get started:
+              Here&apos;s how to get started:
             </p>
             <ol className="list-decimal list-inside space-y-2 text-sm">
               <li>Complete your account verification and KYC</li>

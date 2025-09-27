@@ -5,11 +5,9 @@ const nextConfig: NextConfig = {
   experimental: {
     // Enable modern JavaScript features
     esmExternals: true,
-    // Optimize server components
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
   },
-  // Enable modern bundling
-  swcMinify: true,
+  // Optimize server components (moved from experimental)
+  serverExternalPackages: ['@supabase/supabase-js'],
   // Optimize images
   images: {
     formats: ['image/avif', 'image/webp'],

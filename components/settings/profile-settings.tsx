@@ -18,11 +18,7 @@ import {
 } from "@/components/ui/select";
 import { 
   User as UserIcon, 
-  Building2, 
-  Globe,
-  Phone,
-  Mail,
-  MapPin
+  Building2
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";

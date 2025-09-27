@@ -4,13 +4,11 @@ import { useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { UserProfile, BusinessType } from "@/lib/types/database";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   DollarSign,
   TrendingUp,
-  Users,
   Activity,
   ArrowRight,
   Clock,
@@ -23,7 +21,7 @@ interface DashboardProps {
   businessType: BusinessType;
 }
 
-export function Dashboard({ user, profile, businessType }: DashboardProps) {
+export function Dashboard({ user }: DashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
 
   const userName = user.user_metadata?.display_name || user.email?.split('@')[0] || 'User';
@@ -141,7 +139,7 @@ export function Dashboard({ user, profile, businessType }: DashboardProps) {
                   </div>
                   <h3 className="text-lg font-medium text-slate-900 mb-2">API Services Coming Soon</h3>
                   <p className="text-slate-600 mb-6 max-w-md mx-auto">
-                    We're working hard to bring you powerful payment APIs. 
+                    We&apos;re working hard to bring you powerful payment APIs. 
                     Stay tuned for onramp and offramp transaction capabilities.
                   </p>
                   <div className="flex justify-center gap-3">

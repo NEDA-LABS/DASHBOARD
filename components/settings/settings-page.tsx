@@ -5,8 +5,6 @@ import { User } from "@supabase/supabase-js";
 import { UserProfile, ApiKey } from "@/lib/types/database";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ApiKeyManager } from "./api-key-manager";
@@ -15,8 +13,7 @@ import {
   User as UserIcon, 
   Key, 
   Bell, 
-  Shield,
-  Building2
+  Shield
 } from "lucide-react";
 
 interface SettingsPageProps {

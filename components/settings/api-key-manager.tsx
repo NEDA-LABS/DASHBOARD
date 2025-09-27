@@ -32,8 +32,6 @@ import {
   Key, 
   Plus, 
   Copy, 
-  Eye, 
-  EyeOff, 
   Trash2,
   Calendar,
   Activity
@@ -50,7 +48,6 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
   const [apiKeys, setApiKeys] = useState(initialApiKeys);
   const [isCreating, setIsCreating] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
-  const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
   const [newApiKey, setNewApiKey] = useState<{ key: string; secret: string } | null>(null);
   const supabase = createClient();
 
@@ -153,12 +150,6 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
     toast.success(`${type} copied to clipboard`);
   };
 
-  const toggleSecretVisibility = (keyId: string) => {
-    setShowSecrets(prev => ({
-      ...prev,
-      [keyId]: !prev[keyId]
-    }));
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -236,8 +227,8 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
                 <h4 className="font-medium text-blue-900 mb-2">Getting Started</h4>
                 <ul className="text-sm text-blue-800 space-y-1">
                   <li>• Create separate API keys for different environments</li>
-                  <li>• Use descriptive names like "Production", "Development", "Mobile App"</li>
-                  <li>• Store your API secret securely - it won't be shown again</li>
+                  <li>• Use descriptive names like &quot;Production&quot;, &quot;Development&quot;, &quot;Mobile App&quot;</li>
+                  <li>• Store your API secret securely - it won&apos;t be shown again</li>
                   <li>• You can create multiple API keys as needed</li>
                 </ul>
               </div>
@@ -368,7 +359,7 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
             </div>
             <DialogFooter>
               <Button onClick={() => setNewApiKey(null)}>
-                I've Saved These Credentials
+                I&apos;ve Saved These Credentials
               </Button>
             </DialogFooter>
           </DialogContent>

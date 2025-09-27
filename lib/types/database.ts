@@ -91,7 +91,7 @@ export interface ApiKey {
   key_name: string;
   api_key: string;
   api_secret_hash: string;
-  permissions: Record<string, any>; // JSONB
+  permissions: Record<string, unknown>; // JSONB
   is_active: boolean;
   last_used_at?: string; // ISO timestamp
   expires_at?: string; // ISO timestamp
@@ -105,7 +105,7 @@ export interface ApiKeyInsert {
   key_name: string;
   api_key: string;
   api_secret_hash: string;
-  permissions?: Record<string, any>;
+  permissions?: Record<string, unknown>;
   is_active?: boolean;
   last_used_at?: string;
   expires_at?: string;
@@ -117,7 +117,7 @@ export interface ApiKeyUpdate {
   key_name?: string;
   api_key?: string;
   api_secret_hash?: string;
-  permissions?: Record<string, any>;
+  permissions?: Record<string, unknown>;
   is_active?: boolean;
   last_used_at?: string;
   expires_at?: string;
@@ -183,7 +183,7 @@ export interface AuditLog {
   action: string;
   resource_type?: string;
   resource_id?: string;
-  details: Record<string, any>; // JSONB
+  details: Record<string, unknown>; // JSONB
   ip_address?: string;
   user_agent?: string;
   created_at: string; // ISO timestamp
@@ -195,7 +195,7 @@ export interface AuditLogInsert {
   action: string;
   resource_type?: string;
   resource_id?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
   created_at?: string;
@@ -205,7 +205,7 @@ export interface AuditLogUpdate {
   action?: string;
   resource_type?: string;
   resource_id?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
 }

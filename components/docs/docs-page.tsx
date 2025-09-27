@@ -6,19 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  FileText, 
+  Book, 
   Code, 
-  Zap, 
-  ArrowRight,
-  Book,
-  Terminal,
+  Zap,
   Globe,
-  Shield
+  ArrowRight,
+  Shield,
+  Terminal
 } from "lucide-react";
 
 export function DocsPage() {
   const [activeSection, setActiveSection] = useState("getting-started");
-
   const quickStartGuides = [
     {
       title: "Sender Quick Start",

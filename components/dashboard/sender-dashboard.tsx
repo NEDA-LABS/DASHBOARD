@@ -1,7 +1,3 @@
-"use client";
-
-import { User } from "@supabase/supabase-js";
-import { UserProfile } from "@/lib/types/database";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -15,12 +11,8 @@ import {
   Zap
 } from "lucide-react";
 
-interface SenderDashboardProps {
-  user: User;
-  profile: UserProfile | null;
-}
 
-export function SenderDashboard({ user, profile }: SenderDashboardProps) {
+export function SenderDashboard() {
   const stats = [
     {
       title: "Total Volume",
@@ -40,7 +32,7 @@ export function SenderDashboard({ user, profile }: SenderDashboardProps) {
       title: "Active Routes",
       value: "0",
       change: "+0",
-      changeType: "neutral" as const,
+      changeType: "positive" as const,
       icon: Globe,
     },
     {
@@ -203,7 +195,7 @@ export function SenderDashboard({ user, profile }: SenderDashboardProps) {
           <div className="space-y-4">
             <p className="text-muted-foreground">
               As a Sender, you can provide onramp and offramp services to your customers. 
-              Here's how to get started:
+              Here&apos;s how to get started:
             </p>
             <ol className="list-decimal list-inside space-y-2 text-sm">
               <li>Complete your account verification</li>

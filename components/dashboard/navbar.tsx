@@ -20,8 +20,8 @@ const navigation = [
     icon: LayoutDashboard,
   },
   {
-    name: "Documentation",
-    href: "/protected/docs",
+    name: "Docs",
+    href: "https://apinedapay.vercel.app/",
     icon: FileText,
   },
   {
@@ -59,7 +59,7 @@ export function DashboardNavbar() {
                 <div className="hidden h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600">
                   <Zap className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                <span className="text-xl font-bold text-foreground">
                   NedaPay
                 </span>
               </Link>
@@ -74,8 +74,8 @@ export function DashboardNavbar() {
                     className={cn(
                       "inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium transition-colors",
                       isActive
-                        ? "border-blue-500 text-blue-600"
-                        : "border-transparent text-slate-600 hover:border-purple-300 hover:text-purple-600"
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:border-primary/30 hover:text-primary"
                     )}
                   >
                     <item.icon className="mr-2 h-4 w-4" />
@@ -104,8 +104,8 @@ export function DashboardNavbar() {
                 className={cn(
                   "block border-l-4 py-2 pl-3 pr-4 text-base font-medium transition-colors",
                   isActive
-                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : "border-transparent text-muted-foreground hover:border-gray-300 hover:bg-gray-50 hover:text-foreground"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground"
                 )}
               >
                 <div className="flex items-center">

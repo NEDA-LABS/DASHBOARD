@@ -16,12 +16,12 @@ export default function ProtectedLayout({
         <p>
           Powered by{" "}
           <a
-            href="https://supabase.com"
+            href="https://nedapay.xyz"
             target="_blank"
             className="font-bold hover:underline"
             rel="noreferrer"
           >
-            Supabase
+            NedaPay Protocol
           </a>
         </p>
         <ThemeSwitcher />

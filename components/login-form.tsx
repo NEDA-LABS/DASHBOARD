@@ -61,7 +61,7 @@ export function LoginForm({
               className="rounded-lg"
             />
           </div>
-          <CardTitle className="text-2xl text-slate-900 dark:text-slate-100">
+          <CardTitle className="text-2xl text-foreground">
             Welcome back to NedaPay
           </CardTitle>
           <CardDescription>

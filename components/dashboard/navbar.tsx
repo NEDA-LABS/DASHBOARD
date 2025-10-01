@@ -20,6 +20,11 @@ const navigation = [
     icon: LayoutDashboard,
   },
   {
+    name: "Admin",
+    href: "/protected/admin",
+    icon: Settings,
+  },
+  {
     name: "Docs",
     href: "https://apinedapay.vercel.app/",
     icon: FileText,

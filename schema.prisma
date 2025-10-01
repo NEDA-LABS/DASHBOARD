@@ -1,0 +1,723 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["auth", "public"]
+}
+
+model api_keys {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String           @db.Uuid
+  key_name        String           @db.VarChar(100)
+  api_key         String           @unique @db.VarChar(255)
+  api_secret_hash String           @db.VarChar(255)
+  permissions     Json?            @default("{}")
+  is_active       Boolean?         @default(true)
+  last_used_at    DateTime?        @db.Timestamptz(6)
+  expires_at      DateTime?        @db.Timestamptz(6)
+  created_at      DateTime?        @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime?        @default(now()) @db.Timestamptz(6)
+  user_profiles   user_profiles    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  payment_orders  payment_orders[]
+
+  @@index([expires_at], map: "idx_api_keys_expires_at")
+  @@index([is_active], map: "idx_api_keys_is_active")
+  @@index([user_id], map: "idx_api_keys_user_id")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model audit_logs {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String?        @db.Uuid
+  action        String         @db.VarChar(100)
+  resource_type String?        @db.VarChar(50)
+  resource_id   String?        @db.VarChar(255)
+  details       Json?          @default("{}")
+  ip_address    String?        @db.Inet
+  user_agent    String?
+  created_at    DateTime?      @default(now()) @db.Timestamptz(6)
+  user_profiles user_profiles? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([action], map: "idx_audit_logs_action")
+  @@index([created_at], map: "idx_audit_logs_created_at")
+  @@index([user_id], map: "idx_audit_logs_user_id")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model fiat_currencies {
+  id                    String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                  String                  @unique @db.VarChar(10)
+  short_name            String                  @unique @db.VarChar(20)
+  decimals              Int?                    @default(2)
+  symbol                String                  @db.VarChar(10)
+  name                  String                  @db.VarChar(100)
+  market_rate           Decimal                 @db.Decimal(20, 8)
+  is_enabled            Boolean?                @default(false)
+  created_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  institutions          institutions[]
+  provider_currencies   provider_currencies[]
+  provider_order_tokens provider_order_tokens[]
+  provision_buckets     provision_buckets[]
+
+  @@index([code], map: "idx_fiat_currencies_code")
+  @@index([is_enabled], map: "idx_fiat_currencies_is_enabled")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model institutions {
+  code             String            @id @db.VarChar(50)
+  name             String            @db.VarChar(255)
+  type             institution_type? @default(bank)
+  fiat_currency_id String?           @db.Uuid
+  created_at       DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime?         @default(now()) @db.Timestamptz(6)
+  fiat_currencies  fiat_currencies?  @relation(fields: [fiat_currency_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([fiat_currency_id], map: "idx_institutions_fiat_currency_id")
+  @@index([type], map: "idx_institutions_type")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model linked_addresses {
+  address            String           @id @db.VarChar(60)
+  salt               Bytes?
+  institution        String           @db.VarChar(50)
+  account_identifier String           @db.VarChar(100)
+  account_name       String           @db.VarChar(255)
+  metadata           Json?
+  owner_address      String           @unique @db.VarChar(60)
+  last_indexed_block BigInt?
+  tx_hash            String?          @db.VarChar(70)
+  created_at         DateTime?        @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime?        @default(now()) @db.Timestamptz(6)
+  payment_orders     payment_orders[]
+
+  @@index([institution], map: "idx_linked_addresses_institution")
+  @@index([owner_address], map: "idx_linked_addresses_owner_address")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lock_order_fulfillments {
+  id                  String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id            String              @db.Uuid
+  tx_id               String?             @db.VarChar(70)
+  psp                 String?             @db.VarChar(100)
+  validation_status   validation_status?  @default(pending)
+  validation_error    String?
+  created_at          DateTime?           @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime?           @default(now()) @db.Timestamptz(6)
+  lock_payment_orders lock_payment_orders @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lock_payment_orders {
+  id                      String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  token_id                String                     @db.VarChar(50)
+  provision_bucket_id     String?                    @db.VarChar(50)
+  provider_id             String?                    @db.VarChar(50)
+  gateway_id              String                     @db.VarChar(70)
+  amount                  Decimal                    @db.Decimal(20, 8)
+  protocol_fee            Decimal                    @db.Decimal(20, 8)
+  rate                    Decimal                    @db.Decimal(20, 8)
+  order_percent           Decimal                    @db.Decimal(5, 4)
+  sender                  String?                    @db.VarChar(60)
+  tx_hash                 String?                    @db.VarChar(70)
+  status                  lock_payment_order_status? @default(pending)
+  block_number            BigInt
+  institution             String                     @db.VarChar(50)
+  account_identifier      String                     @db.VarChar(100)
+  account_name            String                     @db.VarChar(255)
+  memo                    String?
+  metadata                Json?
+  cancellation_count      Int?                       @default(0)
+  cancellation_reasons    String[]                   @default([])
+  message_hash            String?                    @db.VarChar(400)
+  amount_in_usd           Decimal                    @db.Decimal(20, 8)
+  created_at              DateTime?                  @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime?                  @default(now()) @db.Timestamptz(6)
+  lock_order_fulfillments lock_order_fulfillments[]
+  provider_profiles       provider_profiles?         @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  provision_buckets       provision_buckets?         @relation(fields: [provision_bucket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tokens                  tokens                     @relation(fields: [token_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  transaction_logs        transaction_logs[]
+
+  @@unique([gateway_id, rate, tx_hash, block_number, institution, account_identifier, account_name, memo, token_id])
+  @@index([created_at], map: "idx_lock_payment_orders_created_at")
+  @@index([gateway_id], map: "idx_lock_payment_orders_gateway_id")
+  @@index([provider_id], map: "idx_lock_payment_orders_provider_id")
+  @@index([status], map: "idx_lock_payment_orders_status")
+  @@index([token_id], map: "idx_lock_payment_orders_token_id")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model networks {
+  chain_id                 BigInt             @id
+  identifier               String             @unique @db.VarChar(50)
+  rpc_endpoint             String             @db.VarChar(255)
+  gateway_contract_address String?            @default("") @db.VarChar(60)
+  block_time               Decimal            @db.Decimal(10, 2)
+  is_testnet               Boolean
+  bundler_url              String?            @db.VarChar(255)
+  paymaster_url            String?            @db.VarChar(255)
+  fee                      Decimal            @db.Decimal(20, 8)
+  created_at               DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime?          @default(now()) @db.Timestamptz(6)
+  payment_webhooks         payment_webhooks[]
+  tokens                   tokens[]
+
+  @@index([identifier], map: "idx_networks_identifier")
+  @@index([is_testnet], map: "idx_networks_is_testnet")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model payment_order_recipients {
+  id                 String         @id @db.VarChar(50)
+  payment_order_id   String         @unique @db.Uuid
+  institution        String         @db.VarChar(50)
+  account_identifier String         @db.VarChar(100)
+  account_name       String         @db.VarChar(255)
+  memo               String?
+  provider_id        String?        @db.VarChar(50)
+  metadata           Json?
+  payment_orders     payment_orders @relation(fields: [payment_order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model payment_orders {
+  id                       String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sender_profile_id        String?                   @db.Uuid
+  token_id                 String                    @db.VarChar(50)
+  linked_address_id        String?                   @db.VarChar(60)
+  receive_address_id       String?                   @unique @db.VarChar(60)
+  payment_webhook_id       String?                   @unique @db.Uuid
+  api_key_id               String?                   @db.Uuid
+  amount                   Decimal                   @db.Decimal(20, 8)
+  amount_paid              Decimal                   @db.Decimal(20, 8)
+  amount_returned          Decimal                   @db.Decimal(20, 8)
+  percent_settled          Decimal                   @db.Decimal(5, 4)
+  sender_fee               Decimal                   @db.Decimal(20, 8)
+  network_fee              Decimal                   @db.Decimal(20, 8)
+  rate                     Decimal                   @db.Decimal(20, 8)
+  tx_hash                  String?                   @db.VarChar(70)
+  block_number             BigInt?                   @default(0)
+  from_address             String?                   @db.VarChar(60)
+  return_address           String?                   @db.VarChar(60)
+  receive_address_text     String                    @db.VarChar(60)
+  fee_percent              Decimal                   @db.Decimal(5, 4)
+  fee_address              String?                   @db.VarChar(60)
+  gateway_id               String?                   @db.VarChar(70)
+  message_hash             String?                   @db.VarChar(400)
+  reference                String?                   @db.VarChar(70)
+  status                   payment_order_status?     @default(initiated)
+  amount_in_usd            Decimal                   @db.Decimal(20, 8)
+  created_at               DateTime?                 @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime?                 @default(now()) @db.Timestamptz(6)
+  payment_order_recipients payment_order_recipients?
+  api_keys                 api_keys?                 @relation(fields: [api_key_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  linked_addresses         linked_addresses?         @relation(fields: [linked_address_id], references: [address], onDelete: NoAction, onUpdate: NoAction)
+  payment_webhooks         payment_webhooks?         @relation(fields: [payment_webhook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  receive_addresses        receive_addresses?        @relation(fields: [receive_address_id], references: [address], onDelete: NoAction, onUpdate: NoAction)
+  sender_profiles          sender_profiles?          @relation(fields: [sender_profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tokens                   tokens                    @relation(fields: [token_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  transaction_logs         transaction_logs[]
+
+  @@index([created_at], map: "idx_payment_orders_created_at")
+  @@index([gateway_id], map: "idx_payment_orders_gateway_id")
+  @@index([sender_profile_id], map: "idx_payment_orders_sender_profile_id")
+  @@index([status], map: "idx_payment_orders_status")
+  @@index([token_id], map: "idx_payment_orders_token_id")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model payment_webhooks {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  network_id     BigInt?
+  webhook_id     String          @db.VarChar(100)
+  webhook_secret String          @db.VarChar(100)
+  callback_url   String          @db.VarChar(255)
+  created_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  payment_orders payment_orders?
+  networks       networks?       @relation(fields: [network_id], references: [chain_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model provider_currencies {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider_id       String            @db.VarChar(50)
+  currency_id       String            @db.Uuid
+  available_balance Decimal           @db.Decimal(20, 8)
+  total_balance     Decimal           @db.Decimal(20, 8)
+  reserved_balance  Decimal           @db.Decimal(20, 8)
+  is_available      Boolean?          @default(true)
+  updated_at        DateTime?         @default(now()) @db.Timestamptz(6)
+  fiat_currencies   fiat_currencies   @relation(fields: [currency_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  provider_profiles provider_profiles @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([provider_id, currency_id])
+  @@index([currency_id], map: "idx_provider_currencies_currency_id")
+  @@index([is_available], map: "idx_provider_currencies_is_available")
+  @@index([provider_id], map: "idx_provider_currencies_provider_id")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model provider_order_tokens {
+  id                       String               @id @db.VarChar(50)
+  provider_id              String               @db.VarChar(50)
+  token_id                 String               @db.VarChar(50)
+  currency_id              String               @db.Uuid
+  network                  String               @db.VarChar(50)
+  fixed_conversion_rate    Decimal              @db.Decimal(20, 8)
+  floating_conversion_rate Decimal              @db.Decimal(20, 8)
+  conversion_rate_type     conversion_rate_type
+  max_order_amount         Decimal              @db.Decimal(20, 8)
+  min_order_amount         Decimal              @db.Decimal(20, 8)
+  rate_slippage            Decimal              @db.Decimal(5, 4)
+  address                  String?              @db.VarChar(60)
+  created_at               DateTime?            @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime?            @default(now()) @db.Timestamptz(6)
+  fiat_currencies          fiat_currencies      @relation(fields: [currency_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  provider_profiles        provider_profiles    @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tokens                   tokens               @relation(fields: [token_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([provider_id, token_id, currency_id, network])
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model provider_profiles {
+  id                         String                       @id @db.VarChar(50)
+  user_id                    String                       @unique @db.Uuid
+  trading_name               String?                      @db.VarChar(80)
+  host_identifier            String?                      @db.VarChar(100)
+  provision_mode             provision_mode?              @default(auto)
+  is_active                  Boolean?                     @default(false)
+  is_kyb_verified            Boolean?                     @default(false)
+  visibility_mode            visibility_mode?             @default(public)
+  updated_at                 DateTime?                    @default(now()) @db.Timestamptz(6)
+  lock_payment_orders        lock_payment_orders[]
+  provider_currencies        provider_currencies[]
+  provider_order_tokens      provider_order_tokens[]
+  user_profiles              user_profiles                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  provider_ratings           provider_ratings?
+  provision_bucket_providers provision_bucket_providers[]
+
+  @@index([is_active], map: "idx_provider_profiles_is_active")
+  @@index([is_kyb_verified], map: "idx_provider_profiles_is_kyb_verified")
+  @@index([user_id], map: "idx_provider_profiles_user_id")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model provider_ratings {
+  id                  String            @id @db.VarChar(50)
+  provider_profile_id String            @unique @db.VarChar(50)
+  trust_score         Decimal           @db.Decimal(5, 2)
+  created_at          DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime?         @default(now()) @db.Timestamptz(6)
+  provider_profiles   provider_profiles @relation(fields: [provider_profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@schema("public")
+}
+
+model provision_bucket_providers {
+  provision_bucket_id String            @db.VarChar(50)
+  provider_profile_id String            @db.VarChar(50)
+  provider_profiles   provider_profiles @relation(fields: [provider_profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  provision_buckets   provision_buckets @relation(fields: [provision_bucket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([provision_bucket_id, provider_profile_id])
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model provision_buckets {
+  id                         String                       @id @db.VarChar(50)
+  currency_id                String                       @db.Uuid
+  min_amount                 Decimal                      @db.Decimal(20, 8)
+  max_amount                 Decimal                      @db.Decimal(20, 8)
+  created_at                 DateTime?                    @default(now()) @db.Timestamptz(6)
+  lock_payment_orders        lock_payment_orders[]
+  provision_bucket_providers provision_bucket_providers[]
+  fiat_currencies            fiat_currencies              @relation(fields: [currency_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model receive_addresses {
+  address            String                  @id @db.VarChar(60)
+  salt               Bytes?
+  status             receive_address_status? @default(unused)
+  last_indexed_block BigInt?
+  last_used          DateTime?               @db.Timestamptz(6)
+  tx_hash            String?                 @db.VarChar(70)
+  valid_until        DateTime?               @db.Timestamptz(6)
+  created_at         DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime?               @default(now()) @db.Timestamptz(6)
+  payment_orders     payment_orders?
+
+  @@index([status], map: "idx_receive_addresses_status")
+  @@index([valid_until], map: "idx_receive_addresses_valid_until")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model sender_order_tokens {
+  id              String          @id @db.VarChar(50)
+  sender_id       String          @db.Uuid
+  token_id        String          @db.VarChar(50)
+  fee_percent     Decimal         @db.Decimal(5, 4)
+  fee_address     String          @db.VarChar(60)
+  refund_address  String          @db.VarChar(60)
+  created_at      DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime?       @default(now()) @db.Timestamptz(6)
+  sender_profiles sender_profiles @relation(fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tokens          tokens          @relation(fields: [token_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([sender_id, token_id])
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model sender_profiles {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id             String                @unique @db.Uuid
+  webhook_url         String?               @db.VarChar(255)
+  domain_whitelist    String[]              @default([])
+  provider_id         String?               @db.VarChar(50)
+  is_partner          Boolean?              @default(false)
+  is_active           Boolean?              @default(false)
+  updated_at          DateTime?             @default(now()) @db.Timestamptz(6)
+  payment_orders      payment_orders[]
+  sender_order_tokens sender_order_tokens[]
+  user_profiles       user_profiles         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([is_active], map: "idx_sender_profiles_is_active")
+  @@index([user_id], map: "idx_sender_profiles_user_id")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model tokens {
+  id                    String                  @id @db.VarChar(50)
+  symbol                String                  @db.VarChar(10)
+  contract_address      String                  @db.VarChar(60)
+  decimals              Int                     @db.SmallInt
+  is_enabled            Boolean?                @default(false)
+  base_currency         String?                 @default("USD") @db.VarChar(10)
+  network_id            BigInt
+  created_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  lock_payment_orders   lock_payment_orders[]
+  payment_orders        payment_orders[]
+  provider_order_tokens provider_order_tokens[]
+  sender_order_tokens   sender_order_tokens[]
+  networks              networks                @relation(fields: [network_id], references: [chain_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([is_enabled], map: "idx_tokens_is_enabled")
+  @@index([network_id], map: "idx_tokens_network_id")
+  @@index([symbol], map: "idx_tokens_symbol")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model transaction_logs {
+  id                    String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  payment_order_id      String?                 @db.Uuid
+  lock_payment_order_id String?                 @db.Uuid
+  gateway_id            String?                 @db.VarChar(70)
+  status                transaction_log_status? @default(order_initiated)
+  network               String?                 @db.VarChar(50)
+  tx_hash               String?                 @db.VarChar(70)
+  metadata              Json
+  created_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  lock_payment_orders   lock_payment_orders?    @relation(fields: [lock_payment_order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  payment_orders        payment_orders?         @relation(fields: [payment_order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([created_at], map: "idx_transaction_logs_created_at")
+  @@index([lock_payment_order_id], map: "idx_transaction_logs_lock_payment_order_id")
+  @@index([payment_order_id], map: "idx_transaction_logs_payment_order_id")
+  @@index([status], map: "idx_transaction_logs_status")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model transactions {
+  id                      String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                 String        @db.Uuid
+  transaction_type        String        @db.VarChar(20)
+  status                  String        @default("pending") @db.VarChar(20)
+  amount                  Decimal       @db.Decimal(20, 8)
+  currency                String        @db.VarChar(10)
+  crypto_currency         String        @db.VarChar(20)
+  crypto_amount           Decimal?      @db.Decimal(20, 8)
+  exchange_rate           Decimal?      @db.Decimal(20, 8)
+  fees                    Decimal?      @default(0) @db.Decimal(20, 8)
+  external_transaction_id String?       @db.VarChar(255)
+  provider_name           String?       @db.VarChar(100)
+  created_at              DateTime?     @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime?     @default(now()) @db.Timestamptz(6)
+  completed_at            DateTime?     @db.Timestamptz(6)
+  user_profiles           user_profiles @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([created_at], map: "idx_transactions_created_at")
+  @@index([currency], map: "idx_transactions_currency")
+  @@index([status], map: "idx_transactions_status")
+  @@index([transaction_type], map: "idx_transactions_type")
+  @@index([user_id], map: "idx_transactions_user_id")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model user_profiles {
+  id                  String                @id @db.Uuid
+  business_type       String                @db.VarChar(20)
+  company_name        String?               @db.VarChar(255)
+  website             String?               @db.VarChar(255)
+  phone               String?               @db.VarChar(20)
+  address             String?
+  country             String?               @db.VarChar(100)
+  verification_status String?               @default("pending") @db.VarChar(20)
+  api_key             String?               @unique @db.VarChar(255)
+  api_secret          String?               @db.VarChar(255)
+  created_at          DateTime?             @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime?             @default(now()) @db.Timestamptz(6)
+  api_keys            api_keys[]
+  audit_logs          audit_logs[]
+  provider_profiles   provider_profiles?
+  sender_profiles     sender_profiles?
+  transactions        transactions[]
+  verification_tokens verification_tokens[]
+
+  @@index([business_type], map: "idx_user_profiles_business_type")
+  @@index([created_at], map: "idx_user_profiles_created_at")
+  @@index([verification_status], map: "idx_user_profiles_verification_status")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model verification_tokens {
+  id            String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  owner_id      String                   @db.Uuid
+  token         String                   @db.VarChar(255)
+  scope         verification_token_scope
+  expiry_at     DateTime                 @db.Timestamptz(6)
+  created_at    DateTime?                @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime?                @default(now()) @db.Timestamptz(6)
+  user_profiles user_profiles            @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([expiry_at], map: "idx_verification_tokens_expiry_at")
+  @@index([owner_id], map: "idx_verification_tokens_owner_id")
+  @@index([scope], map: "idx_verification_tokens_scope")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model webhook_retry_attempts {
+  id              String                @id @db.VarChar(50)
+  attempt_number  Int
+  next_retry_time DateTime?             @default(now()) @db.Timestamptz(6)
+  payload         Json
+  signature       String?               @db.VarChar(255)
+  webhook_url     String                @db.VarChar(255)
+  status          webhook_retry_status? @default(failed)
+  created_at      DateTime?             @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime?             @default(now()) @db.Timestamptz(6)
+
+  @@schema("public")
+}
+
+enum aal_level {
+  aal1
+  aal2
+  aal3
+
+  @@schema("auth")
+}
+
+enum code_challenge_method {
+  s256
+  plain
+
+  @@schema("auth")
+}
+
+enum factor_status {
+  unverified
+  verified
+
+  @@schema("auth")
+}
+
+enum factor_type {
+  totp
+  webauthn
+  phone
+
+  @@schema("auth")
+}
+
+enum oauth_registration_type {
+  dynamic
+  manual
+
+  @@schema("auth")
+}
+
+enum one_time_token_type {
+  confirmation_token
+  reauthentication_token
+  recovery_token
+  email_change_token_new
+  email_change_token_current
+  phone_change_token
+
+  @@schema("auth")
+}
+
+enum conversion_rate_type {
+  fixed
+  floating
+
+  @@schema("public")
+}
+
+enum institution_type {
+  bank
+  mobile_money
+
+  @@schema("public")
+}
+
+enum lock_payment_order_status {
+  pending
+  processing
+  cancelled
+  fulfilled
+  validated
+  settled
+  refunded
+
+  @@schema("public")
+}
+
+enum payment_order_status {
+  initiated
+  processing
+  pending
+  validated
+  expired
+  settled
+  refunded
+
+  @@schema("public")
+}
+
+enum provision_mode {
+  manual
+  auto
+
+  @@schema("public")
+}
+
+enum receive_address_status {
+  unused
+  used
+  expired
+
+  @@schema("public")
+}
+
+enum transaction_log_status {
+  order_initiated
+  crypto_deposited
+  order_created
+  order_processing
+  order_fulfilled
+  order_validated
+  order_settled
+  order_refunded
+  gas_prefunded
+  gateway_approved
+
+  @@schema("public")
+}
+
+enum validation_status {
+  pending
+  success
+  failed
+
+  @@schema("public")
+}
+
+enum verification_token_scope {
+  email_verification
+  password_reset
+  kyb_verification
+  api_key_activation
+
+  @@schema("public")
+}
+
+enum visibility_mode {
+  private
+  public
+
+  @@schema("public")
+}
+
+enum webhook_retry_status {
+  success
+  failed
+  expired
+
+  @@schema("public")
+}

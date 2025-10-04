@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AuthButton } from "@/components/auth-button";
+import { ProfileSwitcher } from "@/components/profile-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
 import { 
@@ -18,11 +18,6 @@ const navigation = [
     name: "Dashboard",
     href: "/protected",
     icon: LayoutDashboard,
-  },
-  {
-    name: "Admin",
-    href: "/protected/admin",
-    icon: Settings,
   },
   {
     name: "Docs",
@@ -90,9 +85,9 @@ export function DashboardNavbar() {
               })}
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <ThemeToggle />
-            <AuthButton />
+            <ProfileSwitcher />
           </div>
         </div>
       </div>

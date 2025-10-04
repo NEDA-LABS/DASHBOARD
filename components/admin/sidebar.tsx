@@ -103,13 +103,13 @@ export function AdminSidebar() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/admin/logout', {
+      const response = await fetch('/api/admin/auth/logout', {
         method: 'POST',
       });
 
       if (response.ok) {
-        toast.success('Logged out of admin panel');
-        router.push('/protected/admin/auth');
+        toast.success('Logged out successfully');
+        router.push('/backstage');
         router.refresh();
       } else {
         toast.error('Logout failed');

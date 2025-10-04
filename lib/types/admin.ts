@@ -3,9 +3,9 @@
 
 // Import existing types for consistency
 import type { 
-  UserProfile, 
+  User, 
   ApiKey, 
-  Transaction
+  TransactionLog as TransactionLogDB
 } from './database';
 
 // Core System Types
@@ -347,19 +347,15 @@ export interface PaginationParams {
 // Combined Types with Relations
 export interface UserWithProfiles {
   id: string;
-  business_type: 'sender' | 'provider';
-  company_name?: string;
-  website?: string;
-  phone?: string;
-  address?: string;
-  country?: string;
-  verification_status: 'pending' | 'verified' | 'rejected';
+  first_name: string;
+  last_name: string;
+  email: string;
+  kyb_verification_status: 'not_started' | 'pending' | 'verified' | 'rejected';
   created_at: string;
   updated_at: string;
-  sender_profile?: SenderProfile;
-  provider_profile?: ProviderProfile;
+  sender_profiles?: SenderProfile[];
+  provider_profiles?: ProviderProfile[];
   api_keys: ApiKey[];
-  transactions: Transaction[];
 }
 
 export interface ProviderWithDetails {
@@ -372,7 +368,7 @@ export interface ProviderWithDetails {
   is_kyb_verified: boolean;
   visibility_mode: 'public' | 'private' | 'whitelist';
   updated_at: string;
-  user_profile: UserProfile;
+  user_profile: User;
   provider_currencies: ProviderCurrency[];
   provider_ratings: ProviderRating[];
   order_tokens: ProviderOrderToken[];
@@ -387,25 +383,21 @@ export interface SenderWithDetails {
   is_partner: boolean;
   is_active: boolean;
   updated_at: string;
-  user_profile: UserProfile;
+  user_profile: User;
   order_tokens: SenderOrderToken[];
   payment_orders: PaymentOrder[];
 }
 
 // Re-export existing types for consistency
 export type { 
-  UserProfile, 
+  User, 
   ApiKey, 
-  Transaction,
-  AuditLog,
-  UserProfileInsert,
-  UserProfileUpdate,
+  UserInsert,
+  UserUpdate,
   ApiKeyInsert,
   ApiKeyUpdate,
-  TransactionInsert,
-  TransactionUpdate,
-  AuditLogInsert,
-  AuditLogUpdate
+  TransactionLogInsert,
+  TransactionLogUpdate
 } from './database';
 
 // Admin-specific utility types

@@ -1,7 +1,8 @@
 // Admin Database Operations for NEDA Integration Dashboard
 // Comprehensive CRUD operations for admin functionality
-// Uses service role key to bypass RLS policies
+// Uses Prisma for database operations
 
+import { prisma } from '@/lib/prisma';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { 
   AdminDashboardStats,
@@ -15,88 +16,82 @@ import type {
   Token,
   AdminAction
 } from '@/lib/types/admin';
-import type { AuditLog } from '@/lib/types/database';
+import type { 
+  User,
+  TransactionLog,
+  PaymentOrder as PaymentOrderDB,
+  LockPaymentOrder
+} from '@/lib/types/database';
 
 // Dashboard Statistics
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
-  const supabase = createAdminClient();
-
   try {
-    // Get user statistics with better error handling
-    const { data: userStats, error: userError, count: userCount } = await supabase
-      .from('user_profiles')
-      .select('verification_status, business_type', { count: 'exact' });
-    
-    if (userError) {
-      console.error('Error fetching user stats:', userError);
-      console.error('Error details:', JSON.stringify(userError, null, 2));
-    }
+    // Get user statistics using Prisma
+    const userStats = await prisma.users.findMany({
+      select: {
+        kyb_verification_status: true,
+        is_email_verified: true
+      }
+    });
     
     console.log('User stats query result:', { 
-      dataLength: userStats?.length, 
-      count: userCount,
-      error: userError 
+      dataLength: userStats?.length
     });
 
     // Get provider statistics
-    const { data: providerStats, error: providerError } = await supabase
-      .from('provider_profiles')
-      .select('is_active, is_kyb_verified');
-    
-    if (providerError) {
-      console.error('Error fetching provider stats:', providerError);
-    }
+    const providerStats = await prisma.provider_profiles.findMany({
+      select: {
+        is_active: true,
+        is_kyb_verified: true
+      }
+    });
 
     // Get sender statistics
-    const { data: senderStats, error: senderError } = await supabase
-      .from('sender_profiles')
-      .select('is_active');
-    
-    if (senderError) {
-      console.error('Error fetching sender stats:', senderError);
-    }
+    const senderStats = await prisma.sender_profiles.findMany({
+      select: {
+        is_active: true
+      }
+    });
 
     // Get payment order statistics
-    const { data: orderStats, error: orderError } = await supabase
-      .from('payment_orders')
-      .select('status, amount_in_usd, created_at');
-    
-    if (orderError) {
-      console.error('Error fetching order stats:', orderError);
-    }
+    const orderStats = await prisma.payment_orders.findMany({
+      select: {
+        status: true,
+        amount_in_usd: true,
+        created_at: true
+      }
+    });
 
-    // Get transaction statistics
-    const { data: transactionStats, error: transactionError } = await supabase
-      .from('transactions')
-      .select('status, amount, created_at');
-    
-    if (transactionError) {
-      console.error('Error fetching transaction stats:', transactionError);
-    }
+    // Get transaction log statistics
+    const transactionStats = await prisma.transaction_logs.findMany({
+      select: {
+        status: true,
+        created_at: true
+      }
+    });
+
+    // Get lock payment order statistics
+    const lockOrderStats = await prisma.lock_payment_orders.findMany({
+      select: {
+        status: true,
+        amount_in_usd: true,
+        created_at: true
+      }
+    });
 
     // Get token and currency counts
-    const { error: tokenError, count: tokenCount } = await supabase
-      .from('tokens')
-      .select('id', { count: 'exact' })
-      .eq('is_enabled', true);
-    
-    if (tokenError) {
-      console.error('Error fetching token count:', tokenError);
-    }
+    const tokenCount = await prisma.tokens.count({
+      where: { is_enabled: true }
+    });
 
-    const { error: currencyError, count: currencyCount } = await supabase
-      .from('fiat_currencies')
-      .select('id', { count: 'exact' })
-      .eq('is_enabled', true);
-    
-    if (currencyError) {
-      console.error('Error fetching currency count:', currencyError);
-    }
+    const currencyCount = await prisma.fiat_currencies.count({
+      where: { is_enabled: true }
+    });
 
     // Calculate statistics
     const totalUsers = userStats?.length || 0;
-    const verifiedUsers = userStats?.filter(u => u.verification_status === 'verified').length || 0;
-    const pendingVerification = userStats?.filter(u => u.verification_status === 'pending').length || 0;
+    const verifiedUsers = userStats?.filter(u => u.kyb_verification_status === 'verified').length || 0;
+    const pendingVerification = userStats?.filter(u => u.kyb_verification_status === 'pending').length || 0;
     
     const totalProviders = providerStats?.length || 0;
     const activeProviders = providerStats?.filter(p => p.is_active).length || 0;
@@ -110,14 +105,18 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
     const failedOrders = orderStats?.filter(o => o.status === 'failed' || o.status === 'cancelled').length || 0;
     
     const totalVolumeUsd = orderStats?.reduce((sum, o) => sum + (o.amount_in_usd || 0), 0) || 0;
+    const lockOrderVolumeUsd = lockOrderStats?.reduce((sum, o) => sum + (o.amount_in_usd || 0), 0) || 0;
     
     // Calculate monthly statistics
     const currentMonth = new Date();
     currentMonth.setDate(1);
     const monthlyOrders = orderStats?.filter(o => new Date(o.created_at) >= currentMonth) || [];
-    const monthlyVolumeUsd = monthlyOrders.reduce((sum, o) => sum + (o.amount_in_usd || 0), 0);
+    const monthlyLockOrders = lockOrderStats?.filter(o => new Date(o.created_at) >= currentMonth) || [];
+    const monthlyVolumeUsd = monthlyOrders.reduce((sum, o) => sum + (o.amount_in_usd || 0), 0) + 
+                            monthlyLockOrders.reduce((sum, o) => sum + (o.amount_in_usd || 0), 0);
     
     const totalTransactions = transactionStats?.length || 0;
+    const totalLockOrders = lockOrderStats?.length || 0;
     const monthlyTransactions = transactionStats?.filter(t => new Date(t.created_at) >= currentMonth).length || 0;
 
     const stats = {
@@ -132,9 +131,10 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
       completed_orders: completedOrders,
       pending_orders: pendingOrders,
       failed_orders: failedOrders,
-      total_volume_usd: totalVolumeUsd,
+      total_volume_usd: totalVolumeUsd + lockOrderVolumeUsd,
       monthly_volume_usd: monthlyVolumeUsd,
       total_transactions: totalTransactions,
+      total_lock_orders: totalLockOrders,
       monthly_transactions: monthlyTransactions,
       active_tokens: tokenCount || 0,
       active_currencies: currencyCount || 0,
@@ -158,21 +158,17 @@ export async function getAllUsersWithProfiles(
 
   try {
     let query = supabase
-      .from('user_profiles')
+      .from('users')
       .select(`
         *,
         sender_profiles(*),
         provider_profiles(*),
-        api_keys(*),
-        transactions(*)
+        api_keys(*)
       `, { count: 'exact' });
 
     // Apply filters
     if (filters.verification_status?.length) {
-      query = query.in('verification_status', filters.verification_status);
-    }
-    if (filters.business_type?.length) {
-      query = query.in('business_type', filters.business_type);
+      query = query.in('kyb_verification_status', filters.verification_status);
     }
     if (filters.date_from) {
       query = query.gte('created_at', filters.date_from);
@@ -181,7 +177,7 @@ export async function getAllUsersWithProfiles(
       query = query.lte('created_at', filters.date_to);
     }
     if (filters.search) {
-      query = query.or(`company_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
+      query = query.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
     }
 
     // Apply pagination and sorting
@@ -194,8 +190,22 @@ export async function getAllUsersWithProfiles(
 
     if (error) throw error;
 
+    // Transform the data to match UserWithProfiles interface
+    const transformedData = data?.map(user => ({
+      id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      kyb_verification_status: user.kyb_verification_status,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+      sender_profiles: user.sender_profiles,
+      provider_profiles: user.provider_profiles,
+      api_keys: user.api_keys || []
+    })) || [];
+
     return {
-      data: data as UserWithProfiles[],
+      data: transformedData as UserWithProfiles[],
       count: count || 0
     };
   } catch (error) {
@@ -206,7 +216,7 @@ export async function getAllUsersWithProfiles(
 
 export async function updateUserVerificationStatus(
   userId: string,
-  status: 'pending' | 'verified' | 'rejected',
+  status: 'not_started' | 'pending' | 'verified' | 'rejected',
   adminId: string,
   reason?: string
 ): Promise<void> {
@@ -215,23 +225,29 @@ export async function updateUserVerificationStatus(
   try {
     // Update user verification status
     const { error: updateError } = await supabase
-      .from('user_profiles')
+      .from('users')
       .update({ 
-        verification_status: status,
+        kyb_verification_status: status,
         updated_at: new Date().toISOString()
       })
       .eq('id', userId);
 
     if (updateError) throw updateError;
 
-    // Log the admin action
-    await logAdminAction({
-      type: status === 'verified' ? 'verify_user' : 'reject_user',
-      user_id: userId,
-      admin_id: adminId,
-      reason,
-      metadata: { new_status: status }
-    });
+    // Log the admin action in transaction_logs
+    await supabase
+      .from('transaction_logs')
+      .insert({
+        status: 'order_initiated',
+        metadata: {
+          action_type: status === 'verified' ? 'verify_user' : 'reject_user',
+          target_user_id: userId,
+          admin_id: adminId,
+          reason,
+          new_status: status
+        },
+        created_at: new Date().toISOString()
+      });
 
   } catch (error) {
     console.error('Error updating user verification status:', error);
@@ -252,7 +268,7 @@ export async function grantSenderProfile(
     const { data: existingProfile } = await supabase
       .from('sender_profiles')
       .select('id')
-      .eq('user_id', userId)
+      .eq('user_sender_profile', userId)
       .single();
 
     if (existingProfile) {
@@ -263,7 +279,7 @@ export async function grantSenderProfile(
     const { data, error } = await supabase
       .from('sender_profiles')
       .insert({
-        user_id: userId,
+        user_sender_profile: userId,
         is_active: true,
         is_partner: false,
         domain_whitelist: [],
@@ -275,13 +291,19 @@ export async function grantSenderProfile(
 
     if (error) throw error;
 
-    // Log the admin action
-    await logAdminAction({
-      type: 'grant_sender_profile',
-      user_id: userId,
-      admin_id: adminId,
-      metadata: { profile_id: data.id }
-    });
+    // Log the admin action in transaction_logs
+    await supabase
+      .from('transaction_logs')
+      .insert({
+        status: 'order_initiated',
+        metadata: {
+          action_type: 'grant_sender_profile',
+          target_user_id: userId,
+          admin_id: adminId,
+          profile_id: data.id
+        },
+        created_at: new Date().toISOString()
+      });
 
     return data as SenderProfile;
   } catch (error) {
@@ -305,18 +327,24 @@ export async function revokeSenderProfile(
         is_active: false,
         updated_at: new Date().toISOString()
       })
-      .eq('user_id', userId);
+      .eq('user_sender_profile', userId);
 
     if (error) throw error;
 
-    // Log the admin action
-    await logAdminAction({
-      type: 'revoke_sender_profile',
-      user_id: userId,
-      admin_id: adminId,
-      reason,
-      metadata: { action: 'deactivated' }
-    });
+    // Log the admin action in transaction_logs
+    await supabase
+      .from('transaction_logs')
+      .insert({
+        status: 'order_initiated',
+        metadata: {
+          action_type: 'revoke_sender_profile',
+          target_user_id: userId,
+          admin_id: adminId,
+          reason,
+          action: 'deactivated'
+        },
+        created_at: new Date().toISOString()
+      });
 
   } catch (error) {
     console.error('Error revoking sender profile:', error);
@@ -337,7 +365,7 @@ export async function grantProviderProfile(
     const { data: existingProfile } = await supabase
       .from('provider_profiles')
       .select('id')
-      .eq('user_id', userId)
+      .eq('user_provider_profile', userId)
       .single();
 
     if (existingProfile) {
@@ -352,8 +380,9 @@ export async function grantProviderProfile(
       .from('provider_profiles')
       .insert({
         id: providerId,
-        user_id: userId,
+        user_provider_profile: userId,
         is_active: true,
+        is_available: true,
         is_kyb_verified: false,
         provision_mode: 'auto',
         visibility_mode: 'public',
@@ -365,13 +394,19 @@ export async function grantProviderProfile(
 
     if (error) throw error;
 
-    // Log the admin action
-    await logAdminAction({
-      type: 'grant_provider_profile',
-      user_id: userId,
-      admin_id: adminId,
-      metadata: { profile_id: data.id }
-    });
+    // Log the admin action in transaction_logs
+    await supabase
+      .from('transaction_logs')
+      .insert({
+        status: 'order_initiated',
+        metadata: {
+          action_type: 'grant_provider_profile',
+          target_user_id: userId,
+          admin_id: adminId,
+          profile_id: data.id
+        },
+        created_at: new Date().toISOString()
+      });
 
     return data as ProviderProfile;
   } catch (error) {
@@ -395,18 +430,24 @@ export async function revokeProviderProfile(
         is_active: false,
         updated_at: new Date().toISOString()
       })
-      .eq('user_id', userId);
+      .eq('user_provider_profile', userId);
 
     if (error) throw error;
 
-    // Log the admin action
-    await logAdminAction({
-      type: 'revoke_provider_profile',
-      user_id: userId,
-      admin_id: adminId,
-      reason,
-      metadata: { action: 'deactivated' }
-    });
+    // Log the admin action in transaction_logs
+    await supabase
+      .from('transaction_logs')
+      .insert({
+        status: 'order_initiated',
+        metadata: {
+          action_type: 'revoke_provider_profile',
+          target_user_id: userId,
+          admin_id: adminId,
+          reason,
+          action: 'deactivated'
+        },
+        created_at: new Date().toISOString()
+      });
 
   } catch (error) {
     console.error('Error revoking provider profile:', error);
@@ -493,13 +534,19 @@ export async function updateCurrencyStatus(
 
     if (error) throw error;
 
-    // Log the admin action
-    await logAdminAction({
-      type: isEnabled ? 'enable_currency' : 'disable_currency',
-      user_id: currencyId,
-      admin_id: adminId,
-      metadata: { currency_id: currencyId, enabled: isEnabled }
-    });
+    // Log the admin action in transaction_logs
+    await supabase
+      .from('transaction_logs')
+      .insert({
+        status: 'order_initiated',
+        metadata: {
+          action_type: isEnabled ? 'enable_currency' : 'disable_currency',
+          admin_id: adminId,
+          currency_id: currencyId,
+          enabled: isEnabled
+        },
+        created_at: new Date().toISOString()
+      });
 
   } catch (error) {
     console.error('Error updating currency status:', error);
@@ -542,13 +589,19 @@ export async function updateTokenStatus(
 
     if (error) throw error;
 
-    // Log the admin action
-    await logAdminAction({
-      type: isEnabled ? 'enable_token' : 'disable_token',
-      user_id: tokenId,
-      admin_id: adminId,
-      metadata: { token_id: tokenId, enabled: isEnabled }
-    });
+    // Log the admin action in transaction_logs
+    await supabase
+      .from('transaction_logs')
+      .insert({
+        status: 'order_initiated',
+        metadata: {
+          action_type: isEnabled ? 'enable_token' : 'disable_token',
+          admin_id: adminId,
+          token_id: tokenId,
+          enabled: isEnabled
+        },
+        created_at: new Date().toISOString()
+      });
 
   } catch (error) {
     console.error('Error updating token status:', error);
@@ -556,16 +609,16 @@ export async function updateTokenStatus(
   }
 }
 
-// Audit and Logging
-export async function getAuditLogs(
+// Transaction Logs (replaces audit logs)
+export async function getTransactionLogs(
   filters: AdminFilters = {},
   pagination: PaginationParams = { page: 1, limit: 50 }
-): Promise<{ data: AuditLog[]; count: number }> {
+): Promise<{ data: TransactionLog[]; count: number }> {
   const supabase = createAdminClient();
 
   try {
     let query = supabase
-      .from('audit_logs')
+      .from('transaction_logs')
       .select('*', { count: 'exact' });
 
     // Apply filters
@@ -576,7 +629,7 @@ export async function getAuditLogs(
       query = query.lte('created_at', filters.date_to);
     }
     if (filters.search) {
-      query = query.or(`action.ilike.%${filters.search}%,resource_type.ilike.%${filters.search}%`);
+      query = query.or(`status.ilike.%${filters.search}%,network.ilike.%${filters.search}%`);
     }
 
     // Apply pagination and sorting
@@ -590,41 +643,17 @@ export async function getAuditLogs(
     if (error) throw error;
 
     return {
-      data: data as AuditLog[],
+      data: data as TransactionLog[],
       count: count || 0
     };
   } catch (error) {
-    console.error('Error fetching audit logs:', error);
+    console.error('Error fetching transaction logs:', error);
     throw error;
   }
 }
 
-export async function logAdminAction(action: AdminAction): Promise<void> {
-  const supabase = createAdminClient();
-
-  try {
-    const { error } = await supabase
-      .from('audit_logs')
-      .insert({
-        user_id: action.admin_id,
-        action: action.type,
-        resource_type: 'admin_action',
-        resource_id: action.user_id,
-        details: {
-          action_type: action.type,
-          target_user_id: action.user_id,
-          reason: action.reason,
-          ...action.metadata
-        },
-        created_at: new Date().toISOString()
-      });
-
-    if (error) throw error;
-  } catch (error) {
-    console.error('Error logging admin action:', error);
-    throw error;
-  }
-}
+// Legacy function name for compatibility
+export const getAuditLogs = getTransactionLogs;
 
 // Export utility functions
 export async function exportData(

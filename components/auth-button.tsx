@@ -3,33 +3,32 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { createClient } from "@/lib/supabase/client";
 import { LogoutButton } from "./logout-button";
-import { User } from "@supabase/supabase-js";
+import { getCurrentUser, type User } from "@/lib/auth";
 
 export function AuthButton() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+    const checkUser = () => {
+      const currentUser = getCurrentUser();
+      setUser(currentUser);
       setLoading(false);
     };
 
-    getUser();
+    checkUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
+    // Listen for storage changes (logout from another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'user') {
+        checkUser();
       }
-    );
+    };
 
-    return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   if (loading) {
     return (
@@ -42,7 +41,7 @@ export function AuthButton() {
   return user ? (
     <div className="flex items-center gap-4">
       <span className="text-sm text-muted-foreground">
-        Hey, {user.user_metadata?.display_name || user.email}!
+        Hey, {user.first_name || user.email}!
       </span>
       <LogoutButton />
     </div>

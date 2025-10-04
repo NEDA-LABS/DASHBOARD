@@ -1,34 +1,51 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { SettingsPage } from "@/components/settings/settings-page";
+"use client";
 
-export default async function Settings() {
-  const supabase = await createClient();
+import { SettingsPage } from "@/components/settings";
+import { getCurrentUser, type User } from "@/lib/auth";
+import { useEffect, useState } from "react";
 
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) {
-    redirect("/auth/login");
+export default function Settings() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+    }
+    setLoading(false);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
-  // Get user profile
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
+  if (!user) {
+    return null; // Layout will handle redirect
+  }
 
-  // Get API keys
-  const { data: apiKeys } = await supabase
-    .from('api_keys')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+  // Create a simple settings user object
+  const settingsUser = {
+    id: user.id,
+    email: user.email,
+    user_metadata: {
+      first_name: user.first_name,
+      last_name: user.last_name
+    },
+    app_metadata: {},
+    aud: 'authenticated',
+    created_at: new Date().toISOString()
+  };
 
   return (
     <SettingsPage 
-      user={user} 
-      profile={profile} 
-      apiKeys={apiKeys || []} 
+      user={settingsUser as any} 
+      profile={null} 
+      apiKeys={[]} 
     />
   );
 }

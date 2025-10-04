@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,7 +16,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Check } from "lucide-react";
 
 export function SignUpForm({
   className,
@@ -28,7 +27,7 @@ export function SignUpForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [businessType, setBusinessType] = useState<"sender" | "provider" | null>(null);
+  const [businessTypes, setBusinessTypes] = useState<("sender" | "provider")[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [consentChecked, setConsentChecked] = useState(false);
@@ -38,7 +37,6 @@ export function SignUpForm({
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
@@ -49,14 +47,26 @@ export function SignUpForm({
       return;
     }
 
+    if (!email.trim()) {
+      setError("Email address is required");
+      setIsLoading(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      setIsLoading(false);
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
 
-    if (!businessType) {
-      setError("Please select a business type");
+    if (businessTypes.length === 0) {
+      setError("Please select at least one business type");
       setIsLoading(false);
       return;
     }
@@ -68,25 +78,81 @@ export function SignUpForm({
     }
 
     try {
-      const fullName = `${firstName.trim()} ${lastName.trim()}`;
+      console.log('=== Starting sign-up process ===');
+      console.log('Form data:', { firstName, lastName, email, businessTypes });
       
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/protected`,
-          data: {
-            display_name: fullName,
-            business_type: businessType,
-            first_name: firstName.trim(),
-            last_name: lastName.trim(),
-          },
+      // Call server-side API to create user
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          password,
+          businessTypes
+        }),
       });
-      if (error) throw error;
+
+      console.log('Response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      // Get response text first to debug
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+
+      // Check if response is OK before parsing JSON
+      if (!response.ok) {
+        // Try to parse error message from response
+        let errorMessage = 'Failed to create account';
+        try {
+          const errorData = JSON.parse(responseText);
+          console.log('Parsed error data:', errorData);
+          errorMessage = errorData.error || errorMessage;
+          if (errorData.details) {
+            console.error('Error details:', errorData.details);
+          }
+          if (errorData.stack) {
+            console.error('Error stack:', errorData.stack);
+          }
+        } catch (parseError) {
+          // If JSON parsing fails, use status text
+          console.error('Failed to parse error response:', parseError);
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Parse successful response
+      let data;
+      try {
+        data = JSON.parse(responseText);
+        console.log('Parsed success data:', data);
+      } catch (parseError) {
+        console.error('Failed to parse success response:', parseError);
+        console.error('Response text was:', responseText);
+        throw new Error('Invalid response from server');
+      }
+
+      // Log verification link for development
+      if (data.verificationLink) {
+        console.log('Email verification link:', data.verificationLink);
+      }
+      
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      console.error('Sign-up error:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred while creating your account');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -159,8 +225,9 @@ export function SignUpForm({
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder="Enter your password (min. 8 characters)"
                     required
+                    minLength={8}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -172,6 +239,7 @@ export function SignUpForm({
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                <p className="text-xs text-gray-500">Must be at least 8 characters long</p>
               </div>
 
               {/* Confirm Password */}
@@ -198,21 +266,33 @@ export function SignUpForm({
 
               {/* Business Type */}
               <div className="grid gap-3">
-                <Label>Type of business</Label>
+                <Label>Type of business (select one or both)</Label>
                 <div className="space-y-3">
                   {/* Sender Option */}
                   <div 
                     className={cn(
                       "flex items-start space-x-3 rounded-lg border p-4 cursor-pointer transition-colors",
-                      businessType === "sender" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
+                      businessTypes.includes("sender") ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20" : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                     )}
-                    onClick={() => setBusinessType("sender")}
+                    onClick={() => {
+                      const newChecked = !businessTypes.includes("sender");
+                      if (newChecked) {
+                        setBusinessTypes([...businessTypes, "sender"]);
+                      } else {
+                        setBusinessTypes(businessTypes.filter(type => type !== "sender"));
+                      }
+                    }}
                   >
-                    <Checkbox
-                      checked={businessType === "sender"}
-                      onCheckedChange={() => setBusinessType("sender")}
-                      className="mt-1"
-                    />
+                    <div className="mt-1">
+                      <div className={cn(
+                        "h-4 w-4 shrink-0 rounded-sm border border-primary shadow flex items-center justify-center",
+                        businessTypes.includes("sender") ? "bg-primary text-primary-foreground" : "bg-background"
+                      )}>
+                        {businessTypes.includes("sender") && (
+                          <Check className="h-3 w-3" />
+                        )}
+                      </div>
+                    </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
                         <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
@@ -220,7 +300,7 @@ export function SignUpForm({
                         </div>
                         <span className="font-medium">Sender</span>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         Enable your merchants and customers access fast, secure and reliable cross-border payments that fit into any use cases.
                       </p>
                     </div>
@@ -230,15 +310,27 @@ export function SignUpForm({
                   <div 
                     className={cn(
                       "flex items-start space-x-3 rounded-lg border p-4 cursor-pointer transition-colors",
-                      businessType === "provider" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"
+                      businessTypes.includes("provider") ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20" : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                     )}
-                    onClick={() => setBusinessType("provider")}
+                    onClick={() => {
+                      const newChecked = !businessTypes.includes("provider");
+                      if (newChecked) {
+                        setBusinessTypes([...businessTypes, "provider"]);
+                      } else {
+                        setBusinessTypes(businessTypes.filter(type => type !== "provider"));
+                      }
+                    }}
                   >
-                    <Checkbox
-                      checked={businessType === "provider"}
-                      onCheckedChange={() => setBusinessType("provider")}
-                      className="mt-1"
-                    />
+                    <div className="mt-1">
+                      <div className={cn(
+                        "h-4 w-4 shrink-0 rounded-sm border border-primary shadow flex items-center justify-center",
+                        businessTypes.includes("provider") ? "bg-primary text-primary-foreground" : "bg-background"
+                      )}>
+                        {businessTypes.includes("provider") && (
+                          <Check className="h-3 w-3" />
+                        )}
+                      </div>
+                    </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
                         <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
@@ -246,7 +338,7 @@ export function SignUpForm({
                         </div>
                         <span className="font-medium">Provider</span>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         Set up a node, fund your position and earn on every transaction on a completely transparent, fair and market-neutral platform.
                       </p>
                     </div>

@@ -1,8 +1,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { toast } from 'sonner';
+import { setCurrentUser } from '@/lib/auth';
 import {
   Card,
   CardContent,
@@ -29,22 +30,46 @@ export function LoginForm({
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      // Call server-side login API
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
-      if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
+
+      const data = await response.json();
+
+      console.log('Login response:', data);
+
+      if (!data.success) {
+        // Check if email needs verification
+        if (data.needsVerification) {
+          throw new Error('Please verify your email before logging in. Check your inbox for the verification link.');
+        }
+        throw new Error(data.error || 'Login failed');
+      }
+
+      // Store user info using auth utility
+      setCurrentUser(data.user);
+      
+      toast.success('Login successful!');
+      console.log('🚀 Redirecting user with scope:', data.user.scope);
+      
+      // Redirect immediately - don't set loading to false
+      if (data.user.scope === 'admin') {
+        router.push('/protected/admin');
+      } else {
+        router.push('/protected');
+      }
+      // Keep loading state true during redirect
+      
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
-    } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Only stop loading on error
     }
   };
 

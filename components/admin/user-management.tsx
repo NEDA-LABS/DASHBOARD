@@ -8,36 +8,43 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
   Search,
-  UserCheck,
   Building2,
   Send,
   Eye,
-  MoreHorizontal,
+  Mail,
   CheckCircle,
   XCircle,
-  Clock
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
-import type { UserWithProfiles, AdminFilters } from '@/lib/types/admin';
 
-interface UserManagementProps {
-  initialUsers?: UserWithProfiles[];
-  initialCount?: number;
+interface User {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  scope: string;
+  is_email_verified: boolean;
+  has_early_access: boolean;
+  kyb_verification_status: string;
+  created_at: string;
+  updated_at: string;
+  provider_profiles: any;
+  sender_profiles: any;
 }
 
-export function UserManagement({ initialUsers = [] }: UserManagementProps) {
-  const [users, setUsers] = useState<UserWithProfiles[]>(initialUsers);
-  const [loading, setLoading] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserWithProfiles | null>(null);
-  const [showVerifyDialog, setShowVerifyDialog] = useState(false);
-  const [showGrantDialog, setShowGrantDialog] = useState(false);
-  const [grantType, setGrantType] = useState<'sender' | 'provider'>('sender');
-  const [verificationReason, setVerificationReason] = useState('');
-  const [filters, setFilters] = useState<AdminFilters>({});
+export function UserManagement() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [resendingEmail, setResendingEmail] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showUserDialog, setShowUserDialog] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [scopeFilter, setScopeFilter] = useState('all');
+  const [verifiedFilter, setVerifiedFilter] = useState('all');
   // TODO: Implement pagination
   // const [pagination, setPagination] = useState<PaginationParams>({
   //   page: 1,
@@ -46,133 +53,94 @@ export function UserManagement({ initialUsers = [] }: UserManagementProps) {
   //   sort_order: 'desc'
   // });
 
-  // Mock data for development - replace with actual API calls
+  // Fetch users from API
   useEffect(() => {
-    if (initialUsers.length === 0) {
-      // Load mock data
-      const mockUsers: UserWithProfiles[] = [
-        {
-          id: '1',
-          business_type: 'sender',
-          company_name: 'Acme Corp',
-          website: 'https://acme.com',
-          phone: '+1234567890',
-          address: '123 Main St, City, Country',
-          country: 'US',
-          verification_status: 'pending',
-          created_at: '2024-01-15T10:00:00Z',
-          updated_at: '2024-01-15T10:00:00Z',
-          sender_profile: undefined,
-          provider_profile: undefined,
-          api_keys: [],
-          transactions: []
-        },
-        {
-          id: '2',
-          business_type: 'provider',
-          company_name: 'Global Payments Ltd',
-          website: 'https://globalpay.com',
-          phone: '+1987654321',
-          address: '456 Business Ave, Metro, Country',
-          country: 'UK',
-          verification_status: 'verified',
-          created_at: '2024-01-10T08:30:00Z',
-          updated_at: '2024-01-20T14:15:00Z',
-          sender_profile: undefined,
-          provider_profile: {
-            id: 'provider_123',
-            user_id: '2',
-            trading_name: 'Global Payments',
-            host_identifier: 'globalpay',
-            provision_mode: 'auto',
-            is_active: true,
-            is_kyb_verified: true,
-            visibility_mode: 'public',
-            updated_at: '2024-01-20T14:15:00Z'
-          },
-          api_keys: [],
-          transactions: []
-        }
-      ];
-      setUsers(mockUsers);
-    }
-  }, [initialUsers]);
+    fetchUsers();
+  }, [searchTerm, scopeFilter, verifiedFilter]);
 
-  const handleVerifyUser = async (status: 'verified' | 'rejected') => {
-    if (!selectedUser) return;
-
+  const fetchUsers = async () => {
     setLoading(true);
     try {
-      // TODO: Replace with actual API call
-      // await updateUserVerificationStatus(selectedUser.id, status, 'admin_id', verificationReason);
-      
-      setUsers(users.map(user => 
-        user.id === selectedUser.id 
-          ? { ...user, verification_status: status }
-          : user
-      ));
-      
-      toast.success(`User ${status === 'verified' ? 'verified' : 'rejected'} successfully`);
-      setShowVerifyDialog(false);
-      setVerificationReason('');
-      setSelectedUser(null);
-    } catch {
-      toast.error('Failed to update user verification status');
-    } finally {
-      setLoading(false);
-    }
-  };
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (scopeFilter !== 'all') params.append('scope', scopeFilter);
+      if (verifiedFilter !== 'all') params.append('is_verified', verifiedFilter);
 
-  const handleGrantProfile = async () => {
-    if (!selectedUser) return;
+      const response = await fetch(`/api/admin/users?${params}`);
+      const data = await response.json();
 
-    setLoading(true);
-    try {
-      // TODO: Replace with actual API calls
-      if (grantType === 'sender') {
-        // await grantSenderProfile(selectedUser.id, 'admin_id');
+      if (data.success) {
+        setUsers(data.users);
       } else {
-        // await grantProviderProfile(selectedUser.id, 'admin_id');
+        toast.error('Failed to fetch users');
       }
-      
-      toast.success(`${grantType} profile granted successfully`);
-      setShowGrantDialog(false);
-      setSelectedUser(null);
-    } catch {
-      toast.error(`Failed to grant ${grantType} profile`);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast.error('Failed to fetch users');
     } finally {
       setLoading(false);
     }
   };
 
-  const getVerificationStatusBadge = (status: string) => {
+  const handleResendVerification = async (userId: string) => {
+    setResendingEmail(userId);
+    try {
+      const response = await fetch('/api/admin/users/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Verification email sent successfully!');
+        if (data.verificationLink) {
+          console.log('Verification link:', data.verificationLink);
+        }
+      } else {
+        toast.error(data.error || 'Failed to send verification email');
+      }
+    } catch (error) {
+      console.error('Error resending verification:', error);
+      toast.error('Failed to send verification email');
+    } finally {
+      setResendingEmail(null);
+    }
+  };
+
+  const getEmailVerificationBadge = (isVerified: boolean) => {
+    if (isVerified) {
+      return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 mr-1" />Verified</Badge>;
+    }
+    return <Badge variant="secondary"><AlertCircle className="w-3 h-3 mr-1" />Not Verified</Badge>;
+  };
+
+  const getKYBStatusBadge = (status: string) => {
     switch (status) {
       case 'verified':
         return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 mr-1" />Verified</Badge>;
       case 'rejected':
         return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+      case 'pending':
+        return <Badge variant="secondary"><AlertCircle className="w-3 h-3 mr-1" />Pending</Badge>;
       default:
-        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+        return <Badge variant="outline">Not Started</Badge>;
     }
   };
 
-  const getProfileBadges = (user: UserWithProfiles) => {
-    const badges = [];
-    if (user.sender_profile) {
-      badges.push(
-        <Badge key="sender" variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-          <Send className="w-3 h-3 mr-1" />Sender
-        </Badge>
-      );
+  const getScopeBadge = (scope: string) => {
+    switch (scope) {
+      case 'sender':
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200"><Send className="w-3 h-3 mr-1" />Sender</Badge>;
+      case 'provider':
+        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200"><Building2 className="w-3 h-3 mr-1" />Provider</Badge>;
+      case 'both':
+      case 'sender provider':
+        return <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200">sender provider</Badge>;
+      default:
+        return <Badge variant="outline">{scope}</Badge>;
     }
-    if (user.provider_profile) {
-      badges.push(
-        <Badge key="provider" variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-          <Building2 className="w-3 h-3 mr-1" />Provider
-        </Badge>
-      );
-    }
-    return badges;
   };
 
   return (
@@ -189,48 +157,32 @@ export function UserManagement({ initialUsers = [] }: UserManagementProps) {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Search by company name, email..."
+                  placeholder="Search by name or email..."
                   className="pl-10"
-                  value={filters.search || ''}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
             </div>
-            <Select
-              value={filters.verification_status?.[0] || 'all'}
-              onValueChange={(value) => 
-                setFilters({ 
-                  ...filters, 
-                  verification_status: value === 'all' ? undefined : [value] 
-                })
-              }
-            >
+            <Select value={scopeFilter} onValueChange={setScopeFilter}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Verification Status" />
+                <SelectValue placeholder="Scope" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="verified">Verified</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={filters.business_type?.[0] || 'all'}
-              onValueChange={(value) => 
-                setFilters({ 
-                  ...filters, 
-                  business_type: value === 'all' ? undefined : [value] 
-                })
-              }
-            >
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Business Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="all">All Scopes</SelectItem>
                 <SelectItem value="sender">Sender</SelectItem>
                 <SelectItem value="provider">Provider</SelectItem>
+                <SelectItem value="both">Both</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={verifiedFilter} onValueChange={setVerifiedFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Email Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="true">Verified</SelectItem>
+                <SelectItem value="false">Not Verified</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -241,156 +193,140 @@ export function UserManagement({ initialUsers = [] }: UserManagementProps) {
       <Card>
         <CardHeader>
           <CardTitle>Users ({users.length})</CardTitle>
-          <CardDescription>Manage user accounts and verification status</CardDescription>
+          <CardDescription>Manage user accounts and email verification</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Company</TableHead>
-                <TableHead>Business Type</TableHead>
-                <TableHead>Country</TableHead>
-                <TableHead>Verification</TableHead>
-                <TableHead>Profiles</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{user.company_name || 'N/A'}</div>
-                      <div className="text-sm text-muted-foreground">{user.website}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {user.business_type === 'sender' ? <Send className="w-3 h-3 mr-1" /> : <Building2 className="w-3 h-3 mr-1" />}
-                      {user.business_type}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{user.country}</TableCell>
-                  <TableCell>{getVerificationStatusBadge(user.verification_status)}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      {getProfileBadges(user)}
-                    </div>
-                  </TableCell>
-                  <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedUser(user)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      {user.verification_status === 'pending' && (
+          {loading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading users...</div>
+          ) : users.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">No users found</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Scope</TableHead>
+                  <TableHead>Email Verified</TableHead>
+                  <TableHead>KYB Status</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{user.first_name} {user.last_name}</div>
+                        <div className="text-sm text-muted-foreground">{user.email}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{getScopeBadge(user.scope)}</TableCell>
+                    <TableCell>{getEmailVerificationBadge(user.is_email_verified)}</TableCell>
+                    <TableCell>{getKYBStatusBadge(user.kyb_verification_status)}</TableCell>
+                    <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => {
                             setSelectedUser(user);
-                            setShowVerifyDialog(true);
+                            setShowUserDialog(true);
                           }}
                         >
-                          <UserCheck className="w-4 h-4" />
+                          <Eye className="w-4 h-4" />
                         </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setShowGrantDialog(true);
-                        }}
-                      >
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                        {!user.is_email_verified && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleResendVerification(user.id)}
+                            disabled={resendingEmail === user.id}
+                          >
+                            {resendingEmail === user.id ? (
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Mail className="w-4 h-4" />
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
-      {/* Verification Dialog */}
-      <Dialog open={showVerifyDialog} onOpenChange={setShowVerifyDialog}>
-        <DialogContent>
+      {/* User Details Dialog */}
+      <Dialog open={showUserDialog} onOpenChange={setShowUserDialog}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Verify User</DialogTitle>
+            <DialogTitle>User Details</DialogTitle>
             <DialogDescription>
-              Update the verification status for {selectedUser?.company_name}
+              View user information and verification status
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="reason">Reason (optional)</Label>
-              <Textarea
-                id="reason"
-                placeholder="Enter reason for verification decision..."
-                value={verificationReason}
-                onChange={(e) => setVerificationReason(e.target.value)}
-              />
+          {selectedUser && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Name</p>
+                  <p className="text-sm">{selectedUser.first_name} {selectedUser.last_name}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Email</p>
+                  <p className="text-sm">{selectedUser.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Scope</p>
+                  <div className="mt-1">{getScopeBadge(selectedUser.scope)}</div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Email Verified</p>
+                  <div className="mt-1">{getEmailVerificationBadge(selectedUser.is_email_verified)}</div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">KYB Status</p>
+                  <div className="mt-1">{getKYBStatusBadge(selectedUser.kyb_verification_status)}</div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Early Access</p>
+                  <p className="text-sm">{selectedUser.has_early_access ? 'Yes' : 'No'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Created</p>
+                  <p className="text-sm">{new Date(selectedUser.created_at).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Last Updated</p>
+                  <p className="text-sm">{new Date(selectedUser.updated_at).toLocaleString()}</p>
+                </div>
+              </div>
+              
+              {!selectedUser.is_email_verified && (
+                <div className="pt-4 border-t">
+                  <Button
+                    onClick={() => {
+                      handleResendVerification(selectedUser.id);
+                      setShowUserDialog(false);
+                    }}
+                    disabled={resendingEmail === selectedUser.id}
+                    className="w-full"
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Resend Verification Email
+                  </Button>
+                </div>
+              )}
             </div>
-          </div>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowVerifyDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => handleVerifyUser('rejected')}
-              disabled={loading}
-            >
-              <XCircle className="w-4 h-4 mr-2" />
-              Reject
-            </Button>
-            <Button
-              onClick={() => handleVerifyUser('verified')}
-              disabled={loading}
-            >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Verify
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Grant Profile Dialog */}
-      <Dialog open={showGrantDialog} onOpenChange={setShowGrantDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Grant Profile</DialogTitle>
-            <DialogDescription>
-              Grant a sender or provider profile to {selectedUser?.company_name}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Profile Type</Label>
-              <Select value={grantType} onValueChange={(value: 'sender' | 'provider') => setGrantType(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sender">Sender Profile</SelectItem>
-                  <SelectItem value="provider">Provider Profile</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowGrantDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleGrantProfile} disabled={loading}>
-              Grant {grantType} Profile
+            <Button variant="outline" onClick={() => setShowUserDialog(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

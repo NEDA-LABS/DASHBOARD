@@ -14,16 +14,13 @@ import type {
   SenderProfileUpdate,
   ApiKey,
   ApiKeyInsert,
-  ApiKeyUpdate,
   PaymentOrder,
   PaymentOrderInsert,
-  PaymentOrderUpdate,
   FiatCurrency,
   Token,
   TransactionLog,
   TransactionLogInsert
 } from '@/lib/types/database';
-
 // User Service
 export const UserService = {
   async getById(id: string): Promise<User | null> {

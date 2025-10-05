@@ -50,12 +50,10 @@ export function UserManagement() {
   //   page: 1,
   //   limit: 50,
   //   sort_by: 'created_at',
-  //   sort_order: 'desc'
-  // });
-
   // Fetch users from API
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, scopeFilter, verifiedFilter]);
 
   const fetchUsers = async () => {

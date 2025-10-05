@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // GET - Fetch available networks (Base and Base Sepolia)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Get networks with chain_id starting with 8453 (Base mainnet and Base Sepolia)
     const networks = await prisma.networks.findMany({

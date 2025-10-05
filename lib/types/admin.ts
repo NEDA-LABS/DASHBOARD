@@ -4,8 +4,7 @@
 // Import existing types for consistency
 import type { 
   User, 
-  ApiKey, 
-  TransactionLog as TransactionLogDB
+  ApiKey
 } from './database';
 
 // Core System Types

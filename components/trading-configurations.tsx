@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -33,6 +32,7 @@ interface TokenConfig {
 }
 
 export function TradingConfigurations() {
+  const user = getCurrentUser();
   const [tokens, setTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<number | null>(null);
@@ -43,18 +43,12 @@ export function TradingConfigurations() {
     refundAddress: ''
   });
 
-  const user = getCurrentUser();
-
-  useEffect(() => {
-    if (user) {
-      fetchTradingConfigurations();
-    }
-  }, [user]);
+  const effectiveUserId = user?.id;
 
   const fetchTradingConfigurations = async () => {
     try {
       // First ensure sender profile exists
-      const profileResponse = await fetch(`/api/sender-profile?userId=${user?.id}`);
+      const profileResponse = await fetch(`/api/sender-profile?userId=${effectiveUserId}`);
       if (!profileResponse.ok) {
         toast.error('Failed to initialize sender profile');
         return;
@@ -65,17 +59,29 @@ export function TradingConfigurations() {
       const data = await response.json();
       
       if (response.ok) {
-        setTokens(data.tokens);
+        setTokens(data.tokens || []);
+        if (data.tokens && data.tokens.length > 0) {
+          setSelectedToken(data.tokens[0]);
+          if (data.tokens[0].config) {
+            setConfig(data.tokens[0].config);
+          }
+        }
       } else {
         toast.error(data.error || 'Failed to fetch trading configurations');
       }
-    } catch (error) {
-      console.error('Error fetching trading configurations:', error);
+    } catch (_error) {
       toast.error('Failed to fetch trading configurations');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (effectiveUserId) {
+      fetchTradingConfigurations();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveUserId]);
 
   const handleTokenSelect = (token: Token) => {
     setSelectedToken(token);

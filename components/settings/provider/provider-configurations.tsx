@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Loader2, Building2, CheckCircle, AlertCircle, Plus, Minus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -67,14 +66,17 @@ export function ProviderLiquidityConfigurations({ userId }: ProviderConfiguratio
 
   useEffect(() => {
     if (effectiveUserId) {
+      fetchConfigurations();
       fetchNetworks();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveUserId]);
 
   useEffect(() => {
     if (effectiveUserId && networks.length > 0) {
       fetchConfigurations();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveUserId, networks]);
 
   const fetchNetworks = async () => {
@@ -85,8 +87,8 @@ export function ProviderLiquidityConfigurations({ userId }: ProviderConfiguratio
         const data = await response.json();
         setNetworks(data.networks || []);
       }
-    } catch (error) {
-      console.error('Error fetching networks:', error);
+    } catch (_error) {
+      console.error('Error fetching networks:', _error);
     }
   };
 
@@ -120,7 +122,7 @@ export function ProviderLiquidityConfigurations({ userId }: ProviderConfiguratio
         const error = await response.json();
         setMessage({ type: 'error', text: error.error || 'Failed to fetch configurations' });
       }
-    } catch (error) {
+    } catch (_error) {
       setMessage({ type: 'error', text: 'Failed to fetch provider configurations' });
     } finally {
       setLoading(false);
@@ -152,13 +154,13 @@ export function ProviderLiquidityConfigurations({ userId }: ProviderConfiguratio
       });
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         setMessage({ type: 'success', text: 'Provider configurations updated successfully!' });
       } else {
         const error = await response.json();
         setMessage({ type: 'error', text: error.error || 'Failed to update configurations' });
       }
-    } catch (error) {
+    } catch (_error) {
       setMessage({ type: 'error', text: 'Failed to update provider configurations' });
     } finally {
       setSaving(false);
@@ -492,7 +494,7 @@ export function ProviderLiquidityConfigurations({ userId }: ProviderConfiguratio
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              You have unsaved changes. Please click "Update" to save your provider preferences.
+              You have unsaved changes. Please click &quot;Update&quot; to save your provider preferences.
             </AlertDescription>
           </Alert>
         </CardContent>

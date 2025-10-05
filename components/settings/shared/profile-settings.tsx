@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { UserProfile } from "@/lib/types/database";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +24,7 @@ import { toast } from "sonner";
 
 interface ProfileSettingsProps {
   user: User;
-  profile: UserProfile | null;
+  profile: any | null;
 }
 
 export function ProfileSettings({ user, profile: initialProfile }: ProfileSettingsProps) {

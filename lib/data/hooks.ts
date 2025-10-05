@@ -34,9 +34,7 @@ export function useData<T>(
   const {
     enabled = true,
     refetchOnWindowFocus = true,
-    refetchInterval,
-    staleTime = 5 * 60 * 1000, // 5 minutes
-    cacheTime = 10 * 60 * 1000 // 10 minutes
+    refetchInterval
   } = options;
 
   const [state, setState] = useState<{
@@ -50,7 +48,7 @@ export function useData<T>(
   });
 
   const fetcherRef = useRef(fetcher);
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Update fetcher ref
   useEffect(() => {
@@ -125,7 +123,7 @@ export function useData<T>(
     intervalRef.current = setInterval(async () => {
       try {
         await dataStore.fetch(key, fetcherRef.current);
-      } catch (error) {
+      } catch (_error) {
         // Silently fail interval refetch
       }
     }, refetchInterval);
@@ -144,7 +142,7 @@ export function useData<T>(
     const handleFocus = async () => {
       try {
         await dataStore.fetch(key, fetcherRef.current);
-      } catch (error) {
+      } catch (_error) {
         // Silently fail focus refetch
       }
     };

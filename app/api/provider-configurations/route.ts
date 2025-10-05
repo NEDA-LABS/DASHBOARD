@@ -83,14 +83,7 @@ export async function PUT(request: NextRequest) {
       goLive, 
       visibility, 
       hostIdentifier,
-      provisionMode,
-      selectedCurrency,
-      rateType,
-      fixedRate,
-      slippageTolerance,
-      minOrderAmount,
-      maxOrderAmount,
-      walletAddresses
+      provisionMode
     } = await request.json();
 
     if (!userId) {

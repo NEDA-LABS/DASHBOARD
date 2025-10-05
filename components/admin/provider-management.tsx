@@ -61,7 +61,6 @@ export function ProviderManagement({ initialProviders = [] }: ProviderManagement
           updated_at: '2024-01-20T14:15:00Z',
           user_profile: {
             id: '1',
-            business_type: 'provider',
             company_name: 'Global Payments Ltd',
             website: 'https://globalpay.com',
             phone: '+1987654321',
@@ -70,7 +69,7 @@ export function ProviderManagement({ initialProviders = [] }: ProviderManagement
             verification_status: 'verified',
             created_at: '2024-01-10T08:30:00Z',
             updated_at: '2024-01-20T14:15:00Z'
-          },
+          } as any,
           provider_currencies: [
             {
               id: 'pc_1',
@@ -106,16 +105,15 @@ export function ProviderManagement({ initialProviders = [] }: ProviderManagement
           updated_at: '2024-01-18T09:30:00Z',
           user_profile: {
             id: '2',
-            business_type: 'provider',
             company_name: 'Crypto Exchange Pro',
             website: 'https://cryptopro.com',
             phone: '+1555123456',
-            address: '789 Crypto St, Digital City, Country',
-            country: 'US',
+            address: '789 Tech Street, Silicon Valley, USA',
+            country: 'USA',
             verification_status: 'pending',
-            created_at: '2024-01-15T12:00:00Z',
+            created_at: '2024-01-15T10:00:00Z',
             updated_at: '2024-01-18T09:30:00Z'
-          },
+          } as any,
           provider_currencies: [],
           provider_ratings: [],
           order_tokens: []
@@ -249,7 +247,7 @@ export function ProviderManagement({ initialProviders = [] }: ProviderManagement
                 <TableRow key={provider.id}>
                   <TableCell>
                     <div>
-                      <div className="font-medium">{provider.trading_name || provider.user_profile.company_name}</div>
+                      <div className="font-medium">{provider.trading_name || (provider.user_profile as any).company_name}</div>
                       <div className="text-sm text-muted-foreground">@{provider.host_identifier}</div>
                     </div>
                   </TableCell>
@@ -325,9 +323,9 @@ export function ProviderManagement({ initialProviders = [] }: ProviderManagement
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <div><strong>Trading Name:</strong> {selectedProvider.trading_name}</div>
-                      <div><strong>Company:</strong> {selectedProvider.user_profile.company_name}</div>
-                      <div><strong>Website:</strong> {selectedProvider.user_profile.website}</div>
-                      <div><strong>Country:</strong> {selectedProvider.user_profile.country}</div>
+                      <div><strong>Company:</strong> {(selectedProvider.user_profile as any).company_name}</div>
+                      <div><strong>Website:</strong> {(selectedProvider.user_profile as any).website}</div>
+                      <div><strong>Country:</strong> {(selectedProvider.user_profile as any).country}</div>
                       <div><strong>Host ID:</strong> @{selectedProvider.host_identifier}</div>
                     </CardContent>
                   </Card>

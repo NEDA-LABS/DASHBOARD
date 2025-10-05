@@ -56,22 +56,20 @@ export function SenderManagement({ initialSenders = [] }: SenderManagementProps)
           user_id: '1',
           webhook_url: 'https://api.acme.com/webhooks/nedapay',
           domain_whitelist: ['acme.com', 'app.acme.com'],
-          provider_id: undefined,
           is_partner: true,
           is_active: true,
           updated_at: '2024-01-20T14:15:00Z',
           user_profile: {
             id: '1',
-            business_type: 'sender',
             company_name: 'Acme Corp',
             website: 'https://acme.com',
             phone: '+1234567890',
-            address: '123 Main St, City, Country',
-            country: 'US',
+            address: '123 Main St, City, USA',
+            country: 'USA',
             verification_status: 'verified',
-            created_at: '2024-01-15T10:00:00Z',
+            created_at: '2024-01-10T08:30:00Z',
             updated_at: '2024-01-20T14:15:00Z'
-          },
+          } as any,
           order_tokens: [],
           payment_orders: []
         },
@@ -86,16 +84,15 @@ export function SenderManagement({ initialSenders = [] }: SenderManagementProps)
           updated_at: '2024-01-18T09:30:00Z',
           user_profile: {
             id: '2',
-            business_type: 'sender',
             company_name: 'StartupXYZ',
             website: 'https://startupxyz.com',
             phone: '+1555987654',
-            address: '456 Innovation Ave, Tech City, Country',
-            country: 'CA',
+            address: '456 Tech Ave, Innovation City, Canada',
+            country: 'Canada',
             verification_status: 'pending',
-            created_at: '2024-01-16T08:00:00Z',
+            created_at: '2024-01-15T10:00:00Z',
             updated_at: '2024-01-18T09:30:00Z'
-          },
+          } as any,
           order_tokens: [],
           payment_orders: []
         }
@@ -133,7 +130,7 @@ export function SenderManagement({ initialSenders = [] }: SenderManagementProps)
     if (!sender.is_active) {
       return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Inactive</Badge>;
     }
-    if (sender.user_profile.verification_status !== 'verified') {
+    if ((sender.user_profile as any).verification_status !== 'verified') {
       return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pending Verification</Badge>;
     }
     return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>;
@@ -246,8 +243,8 @@ export function SenderManagement({ initialSenders = [] }: SenderManagementProps)
                 <TableRow key={sender.id}>
                   <TableCell>
                     <div>
-                      <div className="font-medium">{sender.user_profile.company_name}</div>
-                      <div className="text-sm text-muted-foreground">{sender.user_profile.website}</div>
+                      <div className="font-medium">{(sender.user_profile as any).company_name}</div>
+                      <div className="text-sm text-muted-foreground">{(sender.user_profile as any).website}</div>
                     </div>
                   </TableCell>
                   <TableCell>{getStatusBadge(sender)}</TableCell>
@@ -310,7 +307,7 @@ export function SenderManagement({ initialSenders = [] }: SenderManagementProps)
           <DialogHeader>
             <DialogTitle>Sender Details</DialogTitle>
             <DialogDescription>
-              Detailed information for {selectedSender?.user_profile.company_name}
+              Detailed information for {(selectedSender?.user_profile as any)?.company_name}
             </DialogDescription>
           </DialogHeader>
           {selectedSender && (
@@ -329,11 +326,11 @@ export function SenderManagement({ initialSenders = [] }: SenderManagementProps)
                       <CardTitle className="text-lg">Basic Information</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                      <div><strong>Company:</strong> {selectedSender.user_profile.company_name}</div>
-                      <div><strong>Website:</strong> {selectedSender.user_profile.website}</div>
-                      <div><strong>Phone:</strong> {selectedSender.user_profile.phone}</div>
-                      <div><strong>Country:</strong> {selectedSender.user_profile.country}</div>
-                      <div><strong>Address:</strong> {selectedSender.user_profile.address}</div>
+                      <div><strong>Company:</strong> {(selectedSender.user_profile as any).company_name}</div>
+                      <div><strong>Website:</strong> {(selectedSender.user_profile as any).website}</div>
+                      <div><strong>Phone:</strong> {(selectedSender.user_profile as any).phone}</div>
+                      <div><strong>Country:</strong> {(selectedSender.user_profile as any).country}</div>
+                      <div><strong>Address:</strong> {(selectedSender.user_profile as any).address}</div>
                     </CardContent>
                   </Card>
                   
@@ -344,7 +341,7 @@ export function SenderManagement({ initialSenders = [] }: SenderManagementProps)
                     <CardContent className="space-y-2">
                       <div><strong>Status:</strong> {getStatusBadge(selectedSender)}</div>
                       <div><strong>Partner:</strong> {getPartnerBadge(selectedSender.is_partner)}</div>
-                      <div><strong>Verification:</strong> {selectedSender.user_profile.verification_status}</div>
+                      <div><strong>Verification:</strong> {(selectedSender.user_profile as any).verification_status}</div>
                       <div><strong>Webhook:</strong> {getWebhookStatus(selectedSender.webhook_url)}</div>
                       <div><strong>Domains:</strong> {selectedSender.domain_whitelist.length} configured</div>
                     </CardContent>
@@ -430,7 +427,7 @@ export function SenderManagement({ initialSenders = [] }: SenderManagementProps)
           <DialogHeader>
             <DialogTitle>Revoke Sender Profile</DialogTitle>
             <DialogDescription>
-              This will deactivate the sender profile for {selectedSender?.user_profile.company_name}
+              This will deactivate the sender profile for {(selectedSender?.user_profile as any)?.company_name}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

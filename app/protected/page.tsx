@@ -45,7 +45,6 @@ export default function ProtectedPage() {
     <Dashboard 
       user={dashboardUser as any} 
       profile={null}
-      businessType={user.scope as 'sender' | 'provider' | 'both'} 
     />
   );
 }

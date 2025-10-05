@@ -14,14 +14,8 @@ import type {
   PaymentOrder,
   FiatCurrency,
   Token,
-  AdminAction
+  TransactionLog
 } from '@/lib/types/admin';
-import type { 
-  User,
-  TransactionLog,
-  PaymentOrder as PaymentOrderDB,
-  LockPaymentOrder
-} from '@/lib/types/database';
 
 // Dashboard Statistics
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {

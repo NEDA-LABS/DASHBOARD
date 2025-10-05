@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { UserProfile, BusinessType } from "@/lib/types/database";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,14 +16,12 @@ import {
 
 interface DashboardProps {
   user: User;
-  profile: UserProfile | null;
-  businessType: BusinessType;
+  profile: any | null;
 }
 
 export function Dashboard({ user }: DashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
-
-  const userName = user.user_metadata?.display_name || user.email?.split('@')[0] || 'User';
+  const userName = user?.email?.split('@')[0] || 'User';
 
   const stats = [
     {

@@ -44,7 +44,7 @@ export function RoleSelectionModal({ open, onClose, userScope }: RoleSelectionMo
         <DialogHeader>
           <DialogTitle className="text-2xl">Choose Your Role</DialogTitle>
           <DialogDescription>
-            You have access to both Sender and Provider features. Please select how you'd like to proceed.
+            You have access to both Sender and Provider features. Please select how you&apos;d like to proceed.
           </DialogDescription>
         </DialogHeader>
 
@@ -67,7 +67,7 @@ export function RoleSelectionModal({ open, onClose, userScope }: RoleSelectionMo
                   Initiate payments, configure trading settings, and manage transactions as a payment sender.
                 </p>
                 <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
-                  <li>• Configure token fees and addresses</li>
+                  <li>I&apos;m a sender, I want to enable my users to onramp and offramp</li>
                   <li>• Manage payment orders</li>
                   <li>• API integration for payments</li>
                 </ul>

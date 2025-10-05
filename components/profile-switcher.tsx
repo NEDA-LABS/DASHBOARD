@@ -48,7 +48,7 @@ export function ProfileSwitcher() {
 
   const handleSignOut = async () => {
     try {
-      const response = await fetch("/api/auth/logout", {
+      await fetch("/api/auth/logout", {
         method: "POST",
       });
 
@@ -75,7 +75,6 @@ export function ProfileSwitcher() {
   if (!user) return null;
 
   const displayName = `${user.first_name || ""} ${user.last_name || ""}`.trim() || "User";
-  const profileLabel = currentProfile === "sender" ? "Sender" : "Provider";
   const switchToLabel = currentProfile === "sender" ? "Provider" : "Sender";
 
   return (

@@ -83,10 +83,10 @@ class DataStore {
     
     // Prevent duplicate requests
     if (store.loading) {
-      return new Promise((resolve, reject) => {
+      return new Promise<T>((resolve, reject) => {
         const unsubscribe = this.subscribe(key, (data) => {
           unsubscribe();
-          resolve(data);
+          resolve(data as T);
         });
         
         const unsubscribeError = this.subscribeError(key, (error) => {

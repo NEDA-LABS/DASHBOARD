@@ -188,7 +188,7 @@ export function useDataPrefetching() {
   const { user } = useAuth();
   const { currentProfile } = useCurrentProfile();
 
-  const prefetchForRoute = useCallback(async (route: string) => {
+  const prefetchForRoute = useCallback(async (_route: string) => {
     if (!user) return;
 
     const prefetchMap: Record<string, string[]> = {
@@ -209,9 +209,9 @@ export function useDataPrefetching() {
       ]
     };
 
-    const endpoints = prefetchMap[route] || [];
+    const endpoints = prefetchMap[_route] || [];
     await Promise.allSettled(
-      endpoints.map(endpoint => dataStore.prefetchForProfile(currentProfile, user.id))
+      endpoints.map(_endpoint => dataStore.prefetchForProfile(currentProfile, user.id))
     );
   }, [user, currentProfile]);
 

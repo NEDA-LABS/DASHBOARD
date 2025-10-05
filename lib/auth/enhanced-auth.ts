@@ -72,7 +72,7 @@ class EnhancedAuth {
     try {
       // Authenticate user
       const response = await apiClient.post('/auth/login', { email, password });
-      const user = response.data;
+      const user = response.data as User;
 
       // Store user session
       localStorage.setItem('user', JSON.stringify(user));
@@ -235,7 +235,7 @@ class EnhancedAuth {
     try {
       // Verify session is still valid
       const response = await apiClient.get('/auth/verify');
-      const updatedUser = response.data;
+      const updatedUser = response.data as User;
 
       // Update stored user data
       localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -243,7 +243,7 @@ class EnhancedAuth {
 
       // Refresh cached data
       await this.prefetchUserData(updatedUser);
-    } catch (error) {
+    } catch (_error) {
       // Session invalid, logout
       await this.logout();
     }

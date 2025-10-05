@@ -93,7 +93,7 @@ export function SenderServerConfigurations({ userId }: ServerConfigurationsProps
         webhookUrl: localConfig.webhookUrl,
         domainWhitelist: domains
       });
-    } catch (error) {
+    } catch (_error) {
       // Error handled by mutation
     }
   };

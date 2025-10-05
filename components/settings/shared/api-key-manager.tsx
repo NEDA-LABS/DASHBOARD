@@ -86,7 +86,7 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
     }
 
     // Check for duplicate names
-    if (apiKeys.some(key => key.key_name.toLowerCase() === newKeyName.trim().toLowerCase())) {
+    if (apiKeys.some(key => (key as any).key_name?.toLowerCase() === newKeyName.trim().toLowerCase())) {
       toast.error("An API key with this name already exists");
       return;
     }
@@ -241,15 +241,15 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <div>
-                        <p className="font-medium">{apiKey.key_name}</p>
+                        <p className="font-medium">{(apiKey as any).key_name}</p>
                         <p className="text-sm text-muted-foreground">
-                          Created {formatDate(apiKey.created_at)}
+                          Created {formatDate((apiKey as any).created_at)}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={apiKey.is_active ? "default" : "secondary"}>
-                        {apiKey.is_active ? "Active" : "Inactive"}
+                      <Badge variant={(apiKey as any).is_active ? "default" : "secondary"}>
+                        {(apiKey as any).is_active ? "Active" : "Inactive"}
                       </Badge>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -283,14 +283,14 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
                       <Label className="text-xs text-muted-foreground">API Key</Label>
                       <div className="flex items-center gap-2 mt-1">
                         <Input
-                          value={apiKey.api_key}
+                          value={(apiKey as any).api_key}
                           readOnly
                           className="font-mono text-sm"
                         />
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => copyToClipboard(apiKey.api_key, "API Key")}
+                          onClick={() => copyToClipboard((apiKey as any).api_key, "API Key")}
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
@@ -300,7 +300,7 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4" />
                       <span>
-                        Last used: {apiKey.last_used_at ? formatDate(apiKey.last_used_at) : "Never"}
+                        Last used: {(apiKey as any).last_used_at ? formatDate((apiKey as any).last_used_at) : "Never"}
                       </span>
                     </div>
                   </div>

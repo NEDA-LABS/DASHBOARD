@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
   },
   // Enable compression
   compress: true,
+  // ESLint configuration
+  eslint: {
+    ignoreDuringBuilds: false,
+    dirs: ['app', 'components', 'lib'],
+  },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
 };
 
 export default nextConfig;

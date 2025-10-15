@@ -159,30 +159,28 @@ export function SignUpForm({
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <Image 
-              src="/NEDApayLogo.png" 
-              alt="NedaPay" 
-              width={48}
-              height={48}
-              className="rounded-lg"
-            />
-          </div>
-          <CardTitle className="text-2xl text-slate-900 dark:text-slate-100">
-            Join NedaPay
-          </CardTitle>
-          <CardDescription>Create your developer account and start building</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSignUp}>
+    <div className={cn("w-full max-w-lg", className)} {...props}>
+      <div className="bg-white rounded-3xl shadow-xl p-12 max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-semibold text-slate-900 mb-3" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif', letterSpacing: '-0.01em' }}>
+            Sign up
+          </h2>
+          <p className="text-slate-600 text-sm">
+            Create an account and verify your details to start investing with NedaPay. Have an account already?{" "}
+            <Link href="/auth/login" className="text-blue-600 hover:text-blue-700 underline">
+              Log in here
+            </Link>
+          </p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
               {/* Name Fields */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="firstName">First name</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-sm font-medium text-slate-700">First name</Label>
                   <Input
                     id="firstName"
                     type="text"
@@ -190,10 +188,11 @@ export function SignUpForm({
                     required
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    className="h-12 px-4 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                   />
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="lastName">Last name</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-sm font-medium text-slate-700">Last name</Label>
                   <Input
                     id="lastName"
                     type="text"
@@ -201,50 +200,53 @@ export function SignUpForm({
                     required
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    className="h-12 px-4 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                   />
                 </div>
               </div>
 
               {/* Email */}
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email address</Label>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-slate-700">Email address</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email address"
+                  placeholder="Provide your email address"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="h-12 px-4 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                 />
               </div>
 
               {/* Password */}
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-slate-700">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password (min. 8 characters)"
+                    placeholder="Enter your password"
                     required
                     minLength={8}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="h-12 px-4 pr-10 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500">Must be at least 8 characters long</p>
+                <p className="text-xs text-slate-500">Must be at least 8 characters long</p>
               </div>
 
               {/* Confirm Password */}
-              <div className="grid gap-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">Confirm Password</Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
@@ -253,10 +255,11 @@ export function SignUpForm({
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="h-12 px-4 pr-10 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -376,26 +379,32 @@ export function SignUpForm({
                 </div>
               </div>
 
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
               
               <Button 
                 type="submit" 
-                className="w-full bg-blue-500 hover:bg-blue-600" 
+                className="w-full h-12 bg-[#6366F1] hover:bg-[#5558E3] text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
                 disabled={isLoading}
               >
-                {isLoading ? "Creating account..." : "Sign up for early access"}
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Creating account...
+                  </span>
+                ) : (
+                  "Sign Up"
+                )}
               </Button>
             </div>
-            
-            <div className="mt-6 text-center text-sm">
-              Already have an account?{" "}
-              <Link href="/auth/login" className="text-blue-600 hover:underline">
-                Sign in
-              </Link>
-            </div>
           </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+        </div>
+      </div>
+    );
+  }

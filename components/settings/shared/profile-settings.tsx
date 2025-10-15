@@ -87,36 +87,36 @@ export function ProfileSettings({ user, profile: initialProfile }: ProfileSettin
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Account Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserIcon className="h-5 w-5" />
+      <Card className="border-2 border-border/50 shadow-lg rounded-2xl">
+        <CardHeader className="pb-6 pt-8 px-8">
+          <CardTitle className="flex items-center gap-3 text-2xl font-bold">
+            <UserIcon className="h-6 w-6" />
             Account Information
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-sm text-muted-foreground">Display Name</Label>
-              <p className="font-medium">
+        <CardContent className="px-8 pb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">Display Name</Label>
+              <p className="text-base font-semibold">
                 {user.user_metadata?.display_name || "Not set"}
               </p>
             </div>
-            <div>
-              <Label className="text-sm text-muted-foreground">Email</Label>
-              <p className="font-medium">{user.email}</p>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+              <p className="text-base font-semibold">{user.email}</p>
             </div>
-            <div>
-              <Label className="text-sm text-muted-foreground">Business Type</Label>
-              <p className="font-medium">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">Business Type</Label>
+              <p className="text-base font-semibold">
                 {getBusinessTypeDisplay(profile?.business_type)}
               </p>
             </div>
-            <div>
-              <Label className="text-sm text-muted-foreground">Verification Status</Label>
-              <div className="mt-1">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">Verification Status</Label>
+              <div className="mt-2">
                 {getStatusBadge(profile?.verification_status)}
               </div>
             </div>
@@ -125,51 +125,54 @@ export function ProfileSettings({ user, profile: initialProfile }: ProfileSettin
       </Card>
 
       {/* Business Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
+      <Card className="border-2 border-border/50 shadow-lg rounded-2xl">
+        <CardHeader className="pb-6 pt-8 px-8">
+          <CardTitle className="flex items-center gap-3 text-2xl font-bold">
+            <Building2 className="h-6 w-6" />
             Business Information
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="company_name">Company Name</Label>
+        <CardContent className="space-y-6 px-8 pb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <Label htmlFor="company_name" className="text-base font-semibold text-slate-700 dark:text-slate-300">Company Name</Label>
               <Input
                 id="company_name"
                 value={formData.company_name}
                 onChange={(e) => handleInputChange("company_name", e.target.value)}
                 placeholder="Enter your company name"
+                className="h-14 px-5 text-base rounded-xl border-2 border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            <div>
-              <Label htmlFor="website">Website</Label>
+            <div className="space-y-3">
+              <Label htmlFor="website" className="text-base font-semibold text-slate-700 dark:text-slate-300">Website</Label>
               <Input
                 id="website"
                 type="url"
                 value={formData.website}
                 onChange={(e) => handleInputChange("website", e.target.value)}
                 placeholder="https://example.com"
+                className="h-14 px-5 text-base rounded-xl border-2 border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            <div>
-              <Label htmlFor="phone">Phone Number</Label>
+            <div className="space-y-3">
+              <Label htmlFor="phone" className="text-base font-semibold text-slate-700 dark:text-slate-300">Phone Number</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => handleInputChange("phone", e.target.value)}
                 placeholder="+1 (555) 123-4567"
+                className="h-14 px-5 text-base rounded-xl border-2 border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            <div>
-              <Label htmlFor="country">Country</Label>
+            <div className="space-y-3">
+              <Label htmlFor="country" className="text-base font-semibold text-slate-700 dark:text-slate-300">Country</Label>
               <Select
                 value={formData.country}
                 onValueChange={(value) => handleInputChange("country", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-14 text-base rounded-xl border-2 border-slate-300 dark:border-slate-700">
                   <SelectValue placeholder="Select your country" />
                 </SelectTrigger>
                 <SelectContent>
@@ -186,30 +189,37 @@ export function ProfileSettings({ user, profile: initialProfile }: ProfileSettin
               </Select>
             </div>
           </div>
-          <div>
-            <Label htmlFor="address">Business Address</Label>
+          <div className="space-y-3">
+            <Label htmlFor="address" className="text-base font-semibold text-slate-700 dark:text-slate-300">Business Address</Label>
             <Textarea
               id="address"
               value={formData.address}
               onChange={(e) => handleInputChange("address", e.target.value)}
               placeholder="Enter your business address"
-              rows={3}
+              rows={4}
+              className="px-5 py-4 text-base rounded-xl border-2 border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
             />
           </div>
-          <Button onClick={updateProfile} disabled={isUpdating}>
-            {isUpdating ? "Updating..." : "Update Profile"}
-          </Button>
+          <div className="flex justify-end pt-4">
+            <Button 
+              onClick={updateProfile} 
+              disabled={isUpdating}
+              className="h-14 px-8 text-base bg-[#6366F1] hover:bg-[#5558E3] text-white font-semibold rounded-xl shadow-lg transition-all disabled:opacity-50"
+            >
+              {isUpdating ? "Updating..." : "Update Profile"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
       {/* Verification Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Verification</CardTitle>
+      <Card className="border-2 border-border/50 shadow-lg rounded-2xl">
+        <CardHeader className="pb-6 pt-8 px-8">
+          <CardTitle className="text-2xl font-bold">Account Verification</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
+        <CardContent className="px-8 pb-8">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between p-6 border-2 border-border/50 rounded-2xl">
               <div className="flex items-center space-x-3">
                 <div className={`w-2 h-2 rounded-full ${
                   profile?.verification_status === "verified" ? "bg-green-500" :
@@ -227,12 +237,12 @@ export function ProfileSettings({ user, profile: initialProfile }: ProfileSettin
             </div>
 
             {profile?.verification_status !== "verified" && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-medium text-blue-900 mb-2">Complete Your Verification</h4>
-                <p className="text-sm text-blue-700 mb-3">
+              <div className="bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-800 rounded-2xl p-6">
+                <h4 className="font-bold text-lg text-blue-900 dark:text-blue-100 mb-3">Complete Your Verification</h4>
+                <p className="text-base text-blue-700 dark:text-blue-300 mb-5">
                   To access all features and increase your transaction limits, please complete the verification process.
                 </p>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                <Button className="h-12 px-6 text-base bg-[#6366F1] hover:bg-[#5558E3] text-white font-semibold rounded-xl shadow-lg">
                   Start Verification
                 </Button>
               </div>

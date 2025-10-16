@@ -5,7 +5,7 @@ import { User } from "@supabase/supabase-js";
 import { ApiKey } from "@/lib/types/database";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 // Shared components (used by both senders and providers)
 import { ApiKeyManager, ProfileSettings } from "./shared";
@@ -58,138 +58,200 @@ export function SettingsPage({ user, profile, apiKeys }: SettingsPageProps) {
   }, [currentProfile, activeTab]);
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:space-y-6 md:p-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Settings</h1>
-        <p className="text-sm text-muted-foreground md:text-base">
+    <div className="flex-1 p-8 md:p-10">
+      <div className="space-y-3 mb-8">
+        <h1 className="text-4xl font-bold tracking-tight md:text-5xl" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif', letterSpacing: '-0.03em' }}>
+          Settings
+        </h1>
+        <p className="text-lg text-muted-foreground">
           Manage your account settings and API configuration.
         </p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className={`grid w-full ${currentProfile === "sender" ? "grid-cols-3 md:grid-cols-6" : "grid-cols-3 md:grid-cols-5"}`}>
-          <TabsTrigger value="profile" className="flex items-center gap-1 md:gap-2">
-            <UserIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">Profile</span>
-          </TabsTrigger>
-          {currentProfile === "sender" ? (
-            <TabsTrigger value="trading" className="flex items-center gap-1 md:gap-2">
-              <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Trading</span>
-            </TabsTrigger>
-          ) : (
-            <TabsTrigger value="provider" className="flex items-center gap-1 md:gap-2">
-              <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Provider</span>
-            </TabsTrigger>
-          )}
-          {currentProfile === "sender" && (
-            <TabsTrigger value="server" className="flex items-center gap-1 md:gap-2">
-              <Server className="h-4 w-4" />
-              <span className="hidden sm:inline">Server</span>
-            </TabsTrigger>
-          )}
-          <TabsTrigger value="api-keys" className="flex items-center gap-1 md:gap-2">
-            <Key className="h-4 w-4" />
-            <span className="hidden sm:inline">API Keys</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-1 md:gap-2">
-            <Bell className="h-4 w-4" />
-            <span className="hidden sm:inline">Notifications</span>
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-1 md:gap-2">
-            <Shield className="h-4 w-4" />
-            <span className="hidden sm:inline">Security</span>
-          </TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex gap-8">
+        {/* Sidebar Navigation */}
+        <div className="w-64 flex-shrink-0">
+          <nav className="space-y-2 sticky top-8">
+            <button
+              onClick={() => setActiveTab("profile")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                activeTab === "profile"
+                  ? "bg-[#6366F1] text-white shadow-lg"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              }`}
+            >
+              <UserIcon className="h-5 w-5" />
+              <span className="font-medium">Profile</span>
+            </button>
+            
+            {currentProfile === "sender" ? (
+              <button
+                onClick={() => setActiveTab("trading")}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  activeTab === "trading"
+                    ? "bg-[#6366F1] text-white shadow-lg"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                }`}
+              >
+                <TrendingUp className="h-5 w-5" />
+                <span className="font-medium">Trading</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setActiveTab("provider")}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  activeTab === "provider"
+                    ? "bg-[#6366F1] text-white shadow-lg"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                }`}
+              >
+                <TrendingUp className="h-5 w-5" />
+                <span className="font-medium">Provider</span>
+              </button>
+            )}
+            
+            {currentProfile === "sender" && (
+              <button
+                onClick={() => setActiveTab("server")}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  activeTab === "server"
+                    ? "bg-[#6366F1] text-white shadow-lg"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                }`}
+              >
+                <Server className="h-5 w-5" />
+                <span className="font-medium">Server</span>
+              </button>
+            )}
+            
+            <button
+              onClick={() => setActiveTab("api-keys")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                activeTab === "api-keys"
+                  ? "bg-[#6366F1] text-white shadow-lg"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              }`}
+            >
+              <Key className="h-5 w-5" />
+              <span className="font-medium">API Keys</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab("notifications")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                activeTab === "notifications"
+                  ? "bg-[#6366F1] text-white shadow-lg"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              }`}
+            >
+              <Bell className="h-5 w-5" />
+              <span className="font-medium">Notifications</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab("security")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                activeTab === "security"
+                  ? "bg-[#6366F1] text-white shadow-lg"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              }`}
+            >
+              <Shield className="h-5 w-5" />
+              <span className="font-medium">Security</span>
+            </button>
+          </nav>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 min-w-0">
 
         {/* Shared Settings - Available to both senders and providers */}
-        <TabsContent value="profile" className="space-y-4">
+        <TabsContent value="profile" className="space-y-8 mt-0">
           <ProfileSettings user={user} profile={profile} />
         </TabsContent>
 
         {/* Sender-Only Settings */}
         {currentProfile === "sender" && (
-          <TabsContent value="trading" className="space-y-4">
+          <TabsContent value="trading" className="space-y-8 mt-0">
             <SenderTradingConfigurations />
           </TabsContent>
         )}
 
         {currentProfile === "sender" && (
-          <TabsContent value="server" className="space-y-4">
+          <TabsContent value="server" className="space-y-8 mt-0">
             <SenderServerConfigurations userId={user.id} />
           </TabsContent>
         )}
 
         {/* Provider-Only Settings */}
         {currentProfile === "provider" && (
-          <TabsContent value="provider" className="space-y-4">
+          <TabsContent value="provider" className="space-y-8 mt-0">
             <ProviderLiquidityConfigurations userId={user.id} />
           </TabsContent>
         )}
 
         {/* Shared Settings - Available to both senders and providers */}
-        <TabsContent value="api-keys" className="space-y-4">
+        <TabsContent value="api-keys" className="space-y-8 mt-0">
           <ApiKeyManager user={user} apiKeys={apiKeys} />
         </TabsContent>
 
-        <TabsContent value="notifications" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+        <TabsContent value="notifications" className="space-y-6 mt-0">
+          <Card className="border-border/50 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl">
                 <Bell className="h-5 w-5" />
                 Notification Preferences
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center py-8 text-muted-foreground">
-                <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Notification settings will be available soon.</p>
+            <CardContent>
+              <div className="text-center py-12 text-muted-foreground">
+                <Bell className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                <p className="text-base">Notification settings will be available soon.</p>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="security" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+        <TabsContent value="security" className="space-y-6 mt-0">
+          <Card className="border-border/50 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl">
                 <Shield className="h-5 w-5" />
                 Security Settings
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-5 border border-border/50 rounded-xl hover:bg-muted/50 transition-colors">
                   <div>
-                    <p className="font-medium">Two-Factor Authentication</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-semibold text-base">Two-Factor Authentication</p>
+                    <p className="text-sm text-muted-foreground mt-1">
                       Add an extra layer of security to your account
                     </p>
                   </div>
-                  <Badge variant="outline">Coming Soon</Badge>
+                  <Badge variant="outline" className="ml-4">Coming Soon</Badge>
                 </div>
 
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center justify-between p-5 border border-border/50 rounded-xl hover:bg-muted/50 transition-colors">
                   <div>
-                    <p className="font-medium">Password</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-semibold text-base">Password</p>
+                    <p className="text-sm text-muted-foreground mt-1">
                       Change your account password
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="ml-4 rounded-lg">
                     Change Password
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center justify-between p-5 border border-border/50 rounded-xl hover:bg-muted/50 transition-colors">
                   <div>
-                    <p className="font-medium">Login History</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-semibold text-base">Login History</p>
+                    <p className="text-sm text-muted-foreground mt-1">
                       View recent login activity
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="ml-4 rounded-lg">
                     View History
                   </Button>
                 </div>
@@ -197,6 +259,7 @@ export function SettingsPage({ user, profile, apiKeys }: SettingsPageProps) {
             </CardContent>
           </Card>
         </TabsContent>
+        </div>
       </Tabs>
     </div>
   );

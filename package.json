@@ -8,6 +8,7 @@
     "check-node": "node --version && npm --version",
     "upgrade-node": "./scripts/upgrade-node.sh",
     "clean-install": "rm -rf node_modules package-lock.json && npm install",
+    "postinstall": "prisma generate",
     "prisma:pull": "prisma db pull",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",

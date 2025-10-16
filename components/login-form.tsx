@@ -2,21 +2,13 @@
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { toast } from 'sonner';
-import { setCurrentUser } from '@/lib/auth';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from 'sonner';
+import { setCurrentUser } from '@/lib/auth';
 
 export function LoginForm({
   className,
@@ -75,15 +67,21 @@ export function LoginForm({
 
   return (
     <div className={cn("w-full max-w-lg", className)} {...props}>
-      <div className="bg-white rounded-3xl shadow-xl p-12">
+      <div className="relative backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-white/20 dark:border-slate-700/50 rounded-3xl shadow-2xl p-12 overflow-visible">
+        {/* Depth glow effects - top right and bottom left */}
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-gradient-radial from-blue-400/30 via-cyan-400/15 to-transparent rounded-full blur-2xl animate-glow-pulse pointer-events-none"></div>
+        <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-gradient-radial from-indigo-400/30 via-blue-400/15 to-transparent rounded-full blur-2xl animate-glow-pulse-delayed pointer-events-none"></div>
+        
+        {/* Content wrapper */}
+        <div className="relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-semibold text-slate-900 mb-3" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif', letterSpacing: '-0.01em' }}>
-            Login
+        <div className="mb-10">
+          <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-3" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif', letterSpacing: '-0.02em' }}>
+            Welcome back
           </h2>
-          <p className="text-slate-600 text-sm">
-            Enter your email below to login to your account.{" "}
-            <Link href="/auth/sign-up" className="text-blue-600 hover:text-blue-700 underline">
+          <p className="text-slate-600 dark:text-slate-400 text-base">
+            Enter your credentials to access your account.{" "}
+            <Link href="/auth/sign-up" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium underline underline-offset-2">
               Sign up here
             </Link>
           </p>
@@ -92,30 +90,30 @@ export function LoginForm({
         {/* Form */}
         <form onSubmit={handleLogin} className="space-y-5">
           {/* Email Field */}
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-slate-700">
+          <div className="space-y-3">
+            <Label htmlFor="email" className="text-sm font-semibold text-slate-900 dark:text-white">
               Email address
             </Label>
             <Input
               id="email"
               type="email"
-              placeholder="Provide your email address"
+              placeholder="name@company.com"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-12 px-4 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              className="h-12 px-4 bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             />
           </div>
 
           {/* Password Field */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="password" className="text-sm font-semibold text-slate-900 dark:text-white">
                 Password
               </Label>
               <Link
                 href="/auth/forgot-password"
-                className="text-sm text-blue-600 hover:text-blue-700"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
               >
                 Forgot password?
               </Link>
@@ -123,25 +121,25 @@ export function LoginForm({
             <Input
               id="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder="••••••••"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-12 px-4 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              className="h-12 px-4 bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             />
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+              <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
             </div>
           )}
 
           {/* Submit Button */}
           <Button 
             type="submit" 
-            className="w-full h-12 bg-[#6366F1] hover:bg-[#5558E3] text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2" 
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2" 
             disabled={isLoading}
           >
             {isLoading ? (
@@ -157,6 +155,8 @@ export function LoginForm({
             )}
           </Button>
         </form>
+        </div>
+        {/* End content wrapper */}
       </div>
     </div>
   );

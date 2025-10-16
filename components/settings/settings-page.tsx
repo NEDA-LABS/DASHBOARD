@@ -5,7 +5,7 @@ import { User } from "@supabase/supabase-js";
 import { ApiKey } from "@/lib/types/database";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 // Shared components (used by both senders and providers)
 import { ApiKeyManager, ProfileSettings } from "./shared";

@@ -95,4 +95,105 @@
   .animate-fade-in {
     animation: fade-in 0.8s ease-out forwards;
   }
+
+  @keyframes blob {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(20px, -50px) scale(1.1);
+    }
+    50% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    75% {
+      transform: translate(50px, 50px) scale(1.05);
+    }
+  }
+
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  .animation-delay-6000 {
+    animation-delay: 6s;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.1);
+    }
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 4s ease-in-out infinite;
+  }
+
+  .animate-glow-pulse-delayed {
+    animation: glow-pulse 4s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+
+  .bg-gradient-radial {
+    background: radial-gradient(circle, var(--tw-gradient-stops));
+  }
+
+  /* Custom Scrollbar Styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 10px;
+    transition: background 0.2s ease;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.3);
+  }
+
+  .dark *::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.5);
+  }
+
+  /* Grid pattern - more visible */
+  .bg-grid-slate-300 {
+    background-image: linear-gradient(to right, rgb(203 213 225 / 0.3) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgb(203 213 225 / 0.3) 1px, transparent 1px);
+    background-size: 3rem 3rem;
+  }
+
+  .dark .bg-grid-slate-700\/40 {
+    background-image: linear-gradient(to right, rgb(51 65 85 / 0.4) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgb(51 65 85 / 0.4) 1px, transparent 1px);
+    background-size: 3rem 3rem;
+  }
 }

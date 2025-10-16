@@ -2,18 +2,10 @@
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff, Check } from "lucide-react";
@@ -160,15 +152,21 @@ export function SignUpForm({
 
   return (
     <div className={cn("w-full max-w-lg", className)} {...props}>
-      <div className="bg-white rounded-3xl shadow-xl p-12 max-h-[90vh] overflow-y-auto">
+      <div className="relative backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-white/20 dark:border-slate-700/50 rounded-3xl shadow-2xl p-12 max-h-[90vh] overflow-y-auto">
+        {/* Depth glow effects - top right and bottom left */}
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-gradient-radial from-blue-400/30 via-cyan-400/15 to-transparent rounded-full blur-2xl animate-glow-pulse pointer-events-none"></div>
+        <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-gradient-radial from-indigo-400/30 via-blue-400/15 to-transparent rounded-full blur-2xl animate-glow-pulse-delayed pointer-events-none"></div>
+        
+        {/* Content wrapper */}
+        <div className="relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-semibold text-slate-900 mb-3" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif', letterSpacing: '-0.01em' }}>
-            Sign up
+        <div className="mb-10">
+          <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-3" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif', letterSpacing: '-0.02em' }}>
+            Create account
           </h2>
-          <p className="text-slate-600 text-sm">
-            Create an account and verify your details to start investing with NedaPay. Have an account already?{" "}
-            <Link href="/auth/login" className="text-blue-600 hover:text-blue-700 underline">
+          <p className="text-slate-600 dark:text-slate-400 text-base">
+            Join NedaPay and start your journey. Already have an account?{" "}
+            <Link href="/auth/login" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium underline underline-offset-2">
               Log in here
             </Link>
           </p>
@@ -179,87 +177,87 @@ export function SignUpForm({
             <div className="flex flex-col gap-6">
               {/* Name Fields */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-sm font-medium text-slate-700">First name</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="firstName" className="text-sm font-semibold text-slate-900 dark:text-white">First name</Label>
                   <Input
                     id="firstName"
                     type="text"
-                    placeholder="Enter your first name"
+                    placeholder="John"
                     required
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="h-12 px-4 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    className="h-12 px-4 bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-sm font-medium text-slate-700">Last name</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="lastName" className="text-sm font-semibold text-slate-900 dark:text-white">Last name</Label>
                   <Input
                     id="lastName"
                     type="text"
-                    placeholder="Enter your last name"
+                    placeholder="Doe"
                     required
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="h-12 px-4 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    className="h-12 px-4 bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
                   />
                 </div>
               </div>
 
               {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-slate-700">Email address</Label>
+              <div className="space-y-3">
+                <Label htmlFor="email" className="text-sm font-semibold text-slate-900 dark:text-white">Email address</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Provide your email address"
+                  placeholder="name@company.com"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 px-4 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                  className="h-12 px-4 bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
                 />
               </div>
 
               {/* Password */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-slate-700">Password</Label>
+              <div className="space-y-3">
+                <Label htmlFor="password" className="text-sm font-semibold text-slate-900 dark:text-white">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder="••••••••"
                     required
                     minLength={8}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 px-4 pr-10 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    className="h-12 px-4 pr-10 bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                <p className="text-xs text-slate-500">Must be at least 8 characters long</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Must be at least 8 characters long</p>
               </div>
 
               {/* Confirm Password */}
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">Confirm Password</Label>
+              <div className="space-y-3">
+                <Label htmlFor="confirmPassword" className="text-sm font-semibold text-slate-900 dark:text-white">Confirm Password</Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
+                    placeholder="••••••••"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="h-12 px-4 pr-10 border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    className="h-12 px-4 pr-10 bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -268,8 +266,8 @@ export function SignUpForm({
               </div>
 
               {/* Business Type */}
-              <div className="grid gap-3">
-                <Label>Type of business (select one or both)</Label>
+              <div className="grid gap-4">
+                <Label className="text-sm font-semibold text-slate-900 dark:text-white">Type of business (select one or both)</Label>
                 <div className="space-y-3">
                   {/* Sender Option */}
                   <div 
@@ -380,14 +378,14 @@ export function SignUpForm({
               </div>
 
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600">{error}</p>
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                  <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
                 </div>
               )}
               
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-[#6366F1] hover:bg-[#5558E3] text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -404,6 +402,8 @@ export function SignUpForm({
               </Button>
             </div>
           </form>
+        </div>
+        {/* End content wrapper */}
         </div>
       </div>
     );

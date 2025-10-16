@@ -160,22 +160,26 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
   };
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
+    <div className="space-y-6">
+      <Card className="border-none shadow-sm bg-gradient-to-br from-background to-muted/20 rounded-2xl overflow-hidden">
+        <CardHeader className="pb-6 pt-6 px-6 bg-muted/30 border-b border-border/50">
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Key className="h-5 w-5" />
-                API Keys
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Manage your API keys for accessing the NedaPay platform programmatically. You can create multiple API keys for different environments or applications.
-              </p>
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Key className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-xl font-semibold">
+                  API Keys
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Manage your API keys for accessing the NedaPay platform programmatically. You can create multiple API keys for different environments or applications.
+                </p>
+              </div>
             </div>
             <Dialog>
               <DialogTrigger asChild>
-                <Button disabled={apiKeys.length >= 10}>
+                <Button disabled={apiKeys.length >= 10} className="h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl shadow-md hover:shadow-lg transition-all">
                   <Plus className="mr-2 h-4 w-4" />
                   Create API Key
                   {apiKeys.length >= 8 && (
@@ -215,17 +219,19 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
             </Dialog>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           {apiKeys.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Key className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">No API keys yet</p>
-              <p className="text-sm">
+            <div className="text-center py-12 text-muted-foreground">
+              <div className="w-16 h-16 bg-muted/60 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Key className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="text-xl font-semibold text-foreground mb-2">No API keys yet</p>
+              <p className="text-base mb-6">
                 Create your first API key to start integrating with the NedaPay platform.
               </p>
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="font-medium text-blue-900 mb-2">Getting Started</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
+              <div className="max-w-xl mx-auto p-6 bg-primary/5 dark:bg-primary/10 rounded-2xl border border-primary/20">
+                <h4 className="font-bold text-base mb-3">Getting Started</h4>
+                <ul className="text-sm text-muted-foreground space-y-2 text-left">
                   <li>• Create separate API keys for different environments</li>
                   <li>• Use descriptive names like &quot;Production&quot;, &quot;Development&quot;, &quot;Mobile App&quot;</li>
                   <li>• Store your API secret securely - it won&apos;t be shown again</li>
@@ -234,26 +240,26 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {apiKeys.map((apiKey) => (
-                <div key={apiKey.id} className="border rounded-lg p-4 space-y-3">
+                <div key={apiKey.id} className="bg-muted/40 border border-border/30 rounded-xl p-5 space-y-4 hover:bg-muted/60 transition-colors">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
                       <div>
-                        <p className="font-medium">{(apiKey as any).key_name}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="font-semibold text-base">{(apiKey as any).key_name}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
                           Created {formatDate((apiKey as any).created_at)}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={(apiKey as any).is_active ? "default" : "secondary"}>
+                      <Badge variant={(apiKey as any).is_active ? "default" : "secondary"} className="rounded-lg">
                         {(apiKey as any).is_active ? "Active" : "Inactive"}
                       </Badge>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" className="rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
@@ -278,26 +284,27 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div>
-                      <Label className="text-xs text-muted-foreground">API Key</Label>
-                      <div className="flex items-center gap-2 mt-1">
+                      <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">API Key</Label>
+                      <div className="flex items-center gap-2 mt-2">
                         <Input
                           value={(apiKey as any).api_key}
                           readOnly
-                          className="font-mono text-sm"
+                          className="font-mono text-sm bg-background/50 rounded-lg h-11"
                         />
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => copyToClipboard((apiKey as any).api_key, "API Key")}
+                          className="h-11 px-4 rounded-lg hover:bg-primary/10 transition-colors"
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
                       <Calendar className="h-4 w-4" />
                       <span>
                         Last used: {(apiKey as any).last_used_at ? formatDate((apiKey as any).last_used_at) : "Never"}
@@ -367,41 +374,45 @@ export function ApiKeyManager({ user, apiKeys: initialApiKeys }: ApiKeyManagerPr
       )}
 
       {/* API Usage Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            API Usage & Limits
-          </CardTitle>
+      <Card className="border-none shadow-sm bg-gradient-to-br from-background to-muted/20 rounded-2xl overflow-hidden">
+        <CardHeader className="pb-6 pt-6 px-6 bg-muted/30 border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Activity className="h-5 w-5 text-primary" />
+            </div>
+            <CardTitle className="text-xl font-semibold">
+              API Usage & Limits
+            </CardTitle>
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h4 className="font-medium mb-3">Current Plan Limits</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
+              <h4 className="font-semibold text-base mb-4">Current Plan Limits</h4>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center p-3 bg-muted/40 rounded-lg">
                   <span className="text-muted-foreground">API Keys</span>
-                  <span className="font-medium">{apiKeys.length}/10</span>
+                  <span className="font-semibold">{apiKeys.length}/10</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center p-3 bg-muted/40 rounded-lg">
                   <span className="text-muted-foreground">Requests per month</span>
-                  <span className="font-medium">Coming Soon</span>
+                  <span className="font-semibold text-muted-foreground">Coming Soon</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center p-3 bg-muted/40 rounded-lg">
                   <span className="text-muted-foreground">Rate limit</span>
-                  <span className="font-medium">Coming Soon</span>
+                  <span className="font-semibold text-muted-foreground">Coming Soon</span>
                 </div>
               </div>
             </div>
             <div>
-              <h4 className="font-medium mb-3">Quick Start</h4>
-              <div className="space-y-2 text-sm text-muted-foreground">
+              <h4 className="font-semibold text-base mb-4">Quick Start</h4>
+              <div className="space-y-2 text-sm text-muted-foreground mb-4">
                 <p>1. Create an API key with a descriptive name</p>
                 <p>2. Copy both the API key and secret</p>
                 <p>3. Store them securely in your application</p>
                 <p>4. Use them to authenticate API requests</p>
               </div>
-              <Button variant="outline" size="sm" className="mt-3" onClick={() => window.location.href = '/protected/docs'}>
+              <Button variant="outline" className="h-10 px-5 rounded-xl border-border/50 hover:bg-muted/40 transition-all" onClick={() => window.open('https://apinedapay.vercel.app/', '_blank')}>
                 View API Documentation
               </Button>
             </div>

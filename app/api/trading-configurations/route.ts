@@ -37,15 +37,31 @@ export async function GET(request: NextRequest) {
           where: { sender_profile_order_tokens: senderProfile.id }
         },
         networks: true
-      },
-      orderBy: { symbol: 'asc' }
+      }
+    });
+
+    // Sort by popularity (most to least popular)
+    const popularityOrder = ['USDC', 'DAI', 'EURC', 'BRL', 'TRYB', 'ZARP', 'MXNE', 'CADC', 'NZDD', 'IDRX'];
+    const sortedTokens = tokens.sort((a, b) => {
+      const indexA = popularityOrder.indexOf(a.symbol);
+      const indexB = popularityOrder.indexOf(b.symbol);
+      // If symbol not in list, put it at the end
+      const posA = indexA === -1 ? popularityOrder.length : indexA;
+      const posB = indexB === -1 ? popularityOrder.length : indexB;
+      return posA - posB;
     });
 
     // Convert BigInt values to strings for JSON serialization
-    const serializedTokens = tokens.map(token => ({
+    const serializedTokens = sortedTokens.map(token => ({
       ...token,
       id: token.id.toString(),
       network_tokens: token.network_tokens.toString(),
+      sender_order_tokens: token.sender_order_tokens.map(sot => ({
+        ...sot,
+        id: sot.id.toString(),
+        sender_profile_order_tokens: sot.sender_profile_order_tokens.toString(),
+        token_sender_order_tokens: sot.token_sender_order_tokens.toString()
+      })),
       networks: token.networks ? {
         ...token.networks,
         id: token.networks.id.toString(),
@@ -53,7 +69,7 @@ export async function GET(request: NextRequest) {
       } : null
     }));
 
-    return NextResponse.json({ tokens: serializedTokens, senderProfileId: senderProfile.id });
+    return NextResponse.json({ tokens: serializedTokens, senderProfileId: senderProfile.id.toString() });
   } catch (error) {
     console.error('Error fetching trading configurations:', error);
     return NextResponse.json(
